@@ -11,15 +11,22 @@ class User(db.Model,UserMixin):
 
     active = db.Column(db.Boolean, default=True, nullable=False)
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False)
-    fs_token_uniquifier=db.Column(db.String(255),unique=True,nullable=False)
+    fs_token_uniquifier=db.Column(db.String(255),unique=True,nullable=True)
 
-    role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
-    role=db.relationship('Role',uselist=False,)
+    roles=db.relationship('Role',secondary='user_roles')
+    company = db.relationship('Company',back_populates='user', uselist=False)
+    student = db.relationship('Student',back_populates='user', uselist=False)
 
 class Role(db.Model,RoleMixin):
     __tablename__='role'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
+
+user_roles = db.Table(
+    'user_roles',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
+)
 
 class Student(db.Model):
     __tablename__='student'
@@ -27,20 +34,28 @@ class Student(db.Model):
     name = db.Column(db.String(100), nullable=False)  
     phone_no=db.Column(db.String(15), nullable=False)
 
-    program = db.Column(db.String(100), nullable=False)  
+    program_code = db.Column(db.string(10),db.ForeignKey('program.code'), nullable=False)  
     cgpa = db.Column(db.Float, nullable=False)  
     year_in_program= db.Column(db.Integer, nullable=False)   
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship('User', uselist=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False,unique=True)
+    user = db.relationship('User',back_populates='student', uselist=False)
     resume = db.relationship("Resume", uselist=True)    
     applications = db.relationship('Application',  back_populates="student", uselist=True)
+    program = db.relationship('Program', uselist=False)
+
+class Program(db.Model):
+    __tablename__='program'
+    code=db.Column(db.String(10),primary_key=True)
+    name=db.Column(db.String(100),nullable=False,unique=True)
+    duration=db.Column(db.Integer,nullable=False)
+    description=db.Column(db.Text,nullable=True,unique=True)
     
 class Resume(db.Model):
     __tablename__ = 'resume'
     id = db.Column(db.Integer, primary_key=True)
     file_path = db.Column(db.Text, nullable=False)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.roll_no'), nullable=False)
 
 class Company(db.Model):
     __tablename__ = 'company'
@@ -48,20 +63,19 @@ class Company(db.Model):
     name = db.Column(db.String(100), nullable=False)      
     industry =db.Column(db.String(100), nullable=False)   
 
-    hr_email=db.Column(db.String(320),unique=True,nullable=False)
-    hr_phone = db.Column(db.String(15), nullable=False)                     
+    hr_phone = db.Column(db.String(15), nullable=False,unique=True)                     
     website = db.Column(db.Text, nullable=True)                        
     approval_status = db.Column(db.Enum('Applied','Approved','Rejected'), default='Applied',nullable=False)  
 
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship('User', uselist=False)
-    placement_drive = db.relationship('Placement_Drive', back_populates="company", uselist=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
+    user = db.relationship('User',back_populates='company', uselist=False)
+    placement_drives = db.relationship('Placement_Drive', back_populates="company", uselist=True)
 
 class Application(db.Model):
     __tablename__ = 'application'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)  
     resume_id = db.Column(db.Integer, db.ForeignKey('resume.id'), nullable=False)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.roll_no'), nullable=False)
     drive_id = db.Column(db.Integer, db.ForeignKey('placement_drive.id'), nullable=False)
 
     application_date = db.Column(db.DateTime, nullable=False)
@@ -81,7 +95,7 @@ class Placement_Drive(db.Model):
     application_deadline = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.Enum('Pending', 'Approved', 'Closed', 'Rejected'),default='Pending',nullable=False)
 
-    company = db.relationship('Company', back_populates="placement_drive", uselist=False)
+    company = db.relationship('Company', back_populates="placement_drives", uselist=False)
     eligibility = db.relationship('Eligibility', back_populates="placement_drive", uselist=True)
     applications = db.relationship('Application', back_populates="placement_drive", uselist=True)
 
