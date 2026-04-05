@@ -1,11 +1,73 @@
 from flask_restful import Resource
 from flask import request,jsonify,make_response
-from flask_security import utils,auth_token_required,roles_required 
+from flask_security import utils,auth_token_required
 from controller.datastore import user_datastore
 from controller.models import Company,Student,Program,db
 
 from email_validator import validate_email, EmailNotValidError
 import phonenumbers
+
+class GetPrograms(Resource):
+    def get(self):
+        programs = Program.query.all()
+        result = []
+        for p in programs:
+            result.append({
+                "code": p.code,
+                "name": p.name,
+                "duration": p.duration
+            })
+
+        return make_response(jsonify(result), 200)
+
+class CheckEmailAvail(Resource):
+    def post(self):
+        crediential = request.get_json()
+        if not crediential:
+            result = {'message': 'Request body is required.'}
+            return make_response(jsonify(result), 400)
+        
+        email = crediential.get('email', None)
+        if not email:
+            result = {'message': 'Email is required.'}
+            return make_response(jsonify(result), 400)
+        
+        user = user_datastore.find_user(email=email)
+        if user:
+            return make_response(jsonify({'available': False}), 200)
+        else:
+            return make_response(jsonify({'available': True}), 200)
+        
+class CheckPhoneAvail(Resource):
+    def post(self):
+        data = request.get_json()
+        if not data:
+            return make_response(jsonify({'message': 'Request body is required.'}), 400)
+        phone = data.get('phone')
+        if not phone:
+            return make_response(jsonify({'message': 'Phone number is required.'}), 400)
+
+        company = Company.query.filter_by(hr_phone=phone).first()
+        student = Student.query.filter_by(phone_no=phone).first()
+        if company or student:
+            return jsonify({'available': False})
+        else:
+            return jsonify({'available': True})
+        
+        
+class CheckRollAvail(Resource):
+    def post(self):
+        data = request.get_json()
+        if not data:
+            return make_response(jsonify({'message': 'Request body is required.'}), 400)
+        roll_no = data.get('roll_no')
+        if not roll_no:
+            return make_response(jsonify({'message': 'Roll number is required.'}), 400)
+        existing = Student.query.filter_by(roll_no=roll_no).first()
+        if existing:
+            return make_response(jsonify({'available': False}), 200)
+        else:
+            return make_response(jsonify({'available': True}), 200)
 
 class Login(Resource):
     def post(self):
@@ -32,7 +94,7 @@ class Login(Resource):
         
         if user.has_role('company'):
             if user.company.approval_status=='Applied':
-                response={'message':'Company registration has not been approved'}
+                response={'message':'Company registration has not been approved yet'}
                 return make_response(jsonify(response),403)
             elif user.company.approval_status=='Rejected':
                 response={'message':'Company registration has been rejected'}
@@ -42,9 +104,10 @@ class Login(Resource):
         utils.login_user(user)
         response= {
             'message':'Login successful',
-            'user_details':{
-                'email':user.email,
-                'roles':[role.name for role in user.roles],
+            'data':{
+                'user':{
+                    'email':user.email,
+                    'roles':[role.name for role in user.roles]},
                 'auth_token':auth_token
             }
         }
@@ -96,7 +159,7 @@ class StudentRegister(Resource):
             if not phonenumbers.is_valid_number(phone_obj):
                 raise ValueError()
         except Exception:
-            response = {'message': 'Invalid phone number'}
+            return make_response(jsonify({'message': 'Invalid phone number'}), 400)
 
         if not str(roll_no).isdigit():
             response = {'message': 'Roll number must be numeric'}
@@ -129,6 +192,9 @@ class StudentRegister(Resource):
         if year_in_program > program.duration:
             response={'message': f'Year in program cannot exceed program duration: ({program.duration} years)'}
             return make_response(jsonify(response), 400)
+        
+        if len(password)<8:
+             return make_response(jsonify({'message': 'Password should be atleast 8 characters'}), 400)
         
         student_role = user_datastore.find_role('student')
         student = Student(
@@ -187,6 +253,9 @@ class CompanyRegister(Resource):
 
         if not all(char.isalpha() or char.isspace() for char in industry) or len(industry) > 100:
             return make_response(jsonify({'message': 'Industry can only contain letters and spaces, max 100 chars'}), 400)
+        
+        if len(password)<8:
+             return make_response(jsonify({'message': 'Password should be atleast 8 characters'}), 400)
 
 
         company_role = user_datastore.find_role('company')

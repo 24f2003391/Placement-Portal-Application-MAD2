@@ -34,7 +34,7 @@ class Student(db.Model):
     name = db.Column(db.String(100), nullable=False)  
     phone_no=db.Column(db.String(15), nullable=False)
 
-    program_code = db.Column(db.string(10),db.ForeignKey('program.code'), nullable=False)  
+    program_code = db.Column(db.String(10),db.ForeignKey('program.code'), nullable=False)  
     cgpa = db.Column(db.Float, nullable=False)  
     year_in_program= db.Column(db.Integer, nullable=False)   
 
