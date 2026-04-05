@@ -34,26 +34,30 @@ const router = createRouter({
       component: () => import('@/views/student/DashboardView.vue'),
       meta: { requiresAuth: true, role: 'student' }
     },
+    {
+      path: '/company',
+      component: () => import('@/views/company/DashboardView.vue'),
+      meta: { requiresAuth: true, role: 'student' }
+    },
   ],
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   const auth = useAuthStore()
 
   const isAuthenticated = auth.isAuthenticated
   const roles = auth.getUserRoles()
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    return next('/login')
+    return '/login'
   }
 
   if (to.meta.role && !roles.includes(to.meta.role)) {
-    if (roles.includes('admin')) return next('/admin')
-    if (roles.includes('student')) return next('/student')
-    if (roles.includes('company')) return next('/company')
-    return next('/') 
+    if (roles.includes('admin')) return '/admin'
+    if (roles.includes('student')) return '/student'
+    if (roles.includes('company')) return '/company'
+    return '/'
   }
-  next()
 })
 
 export default router

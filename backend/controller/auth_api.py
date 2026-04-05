@@ -212,7 +212,11 @@ class StudentRegister(Resource):
             roles=[student_role],
             student=student 
         )
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return make_response(jsonify({"message": "Error registering student", "error": str(e)}),500)
         return make_response(jsonify({'message': 'Student registered successfully'}), 201)
 
 class CompanyRegister(Resource):
@@ -271,5 +275,9 @@ class CompanyRegister(Resource):
             roles=[company_role],
             company=company_obj 
         )
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return make_response(jsonify({"message": "Error registering company", "error": str(e)}),500)
         return make_response(jsonify({'message': 'Company registered successfully, Wait for approval'}), 201)

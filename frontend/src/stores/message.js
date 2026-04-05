@@ -2,13 +2,14 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useMessageStore = defineStore('messageStore', () => {
-  const messages = ref('')
-  
-  function updateMessages(message) {
-    messages.value = message
+  const messages = ref({ text: '', type: '' })
+
+  function updateMessages(text, type = 'success') {
+    messages.value = { text, type }
+
     setTimeout(() => {
-      messages.value = ''
-    },5000)
+      messages.value = { text: '', type: '' }
+    }, 5000)
   }
 
   return { messages, updateMessages }
