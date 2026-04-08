@@ -4,13 +4,13 @@ from flask_restful import Api
 
 from controller.models import db
 from controller.datastore import user_datastore
-from controller.config import config
+from controller.config import Config
 
 from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(config)
+    app.config.from_object(Config)
 
     db.init_app(app)
     security=Security(app,user_datastore)
@@ -33,6 +33,7 @@ with app.app_context():
     db.session.commit()
 
 from controller.auth_api import Login,Logout,StudentRegister,CompanyRegister,CheckEmailAvail,CheckPhoneAvail,CheckRollAvail,GetPrograms
+from controller.admin_api import GetDrives,ApproveDrive,RejectDrive
 
 api.add_resource(Login,'/login')
 api.add_resource(Logout,'/logout')
@@ -43,6 +44,10 @@ api.add_resource(CheckEmailAvail,'/check-email')
 api.add_resource(CheckPhoneAvail, '/check-phone')
 api.add_resource(CheckRollAvail, '/check-roll')
 api.add_resource(GetPrograms, '/programs')
+
+api.add_resource(GetDrives, "/api/admin/drives")
+api.add_resource(ApproveDrive, "/api/admin/drives/<int:id>/approve")
+api.add_resource(RejectDrive, "/api/admin/drives/<int:id>/reject")
 
 if __name__ == '__main__':    
     app.run(debug=True)

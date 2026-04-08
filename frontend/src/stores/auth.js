@@ -6,11 +6,11 @@ export const useAuthStore = defineStore('authStore', () => {
   const user = ref(JSON.parse(localStorage.getItem('user')) || null)
   const isAuthenticated = computed(() => auth_token.value !== null)
 
-  function setUserCred(token, user){
+  function setUserCred(token, userData){
     localStorage.setItem('auth_token', token)
     localStorage.setItem('user', JSON.stringify(user))
     auth_token.value = token
-    user.value = user
+    user.value = userData
   }
 
   function clearAuthToken() {

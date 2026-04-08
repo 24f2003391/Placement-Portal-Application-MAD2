@@ -42,7 +42,7 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, from) => {
+router.beforeEach((to,from) => {
   const auth = useAuthStore()
 
   const isAuthenticated = auth.isAuthenticated

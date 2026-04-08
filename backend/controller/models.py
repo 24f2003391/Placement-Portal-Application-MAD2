@@ -79,7 +79,7 @@ class Application(db.Model):
     drive_id = db.Column(db.Integer, db.ForeignKey('placement_drive.id'), nullable=False)
 
     application_date = db.Column(db.DateTime, nullable=False)
-    status = db.Column(db.Enum('Applied', 'Shortlisted', 'Selected', 'Rejected'),default='Applied',nullable=False)
+    status = db.Column(db.Enum('Applied', 'Shortlisted', 'Selected', 'Rejected','Cancelled'),default='Applied',nullable=False)
     
     student = db.relationship('Student', back_populates="applications", uselist=False)
     placement_drive = db.relationship('Placement_Drive', back_populates="applications", uselist=False)

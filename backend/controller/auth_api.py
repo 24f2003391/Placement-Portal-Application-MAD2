@@ -54,7 +54,6 @@ class CheckPhoneAvail(Resource):
         else:
             return jsonify({'available': True})
         
-        
 class CheckRollAvail(Resource):
     def post(self):
         data = request.get_json()

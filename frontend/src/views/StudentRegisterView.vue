@@ -9,7 +9,7 @@ const password = ref('');
 const name = ref('');
 const roll_no = ref('');
 const phone_no = ref('');
-const program = ref(null);
+const program_code = ref(null);
 const cgpa = ref('');
 const year_in_program = ref('');
 
@@ -123,7 +123,7 @@ async function register() {
     alert('Invalid password')
     return
   }
-  if (!email.value || !password.value || !name.value || !roll_no.value || !phone_no.value || !program.value || !cgpa.value || !year_in_program.value) {
+  if (!email.value || !password.value || !name.value || !roll_no.value || !phone_no.value || !program_code || !cgpa.value || !year_in_program.value) {
     alert('All fields are required')
     return
   }
@@ -138,7 +138,7 @@ async function register() {
         name: name.value,
         roll_no: roll_no.value,
         phone_no: phone_no.value,
-        program_code: program.value.code,
+        program_code: program_code,
         cgpa: cgpa.value,
         year_in_program: year_in_program.value
       })
@@ -215,12 +215,12 @@ async function register() {
                 <option 
                 v-for="prog in programs" 
                 v-bind:key="prog.code" 
-                v-bind:value="prog"
+                v-bind:value="prog.code"
                 >
                 {{ prog.name }} ({{ prog.code }})
                 </option>
             </select>
-        </div>
+        </div> 
 
         <div class="mb-3">
           <label for="cgpa" class="form-label">CGPA</label>
