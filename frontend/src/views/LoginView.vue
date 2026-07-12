@@ -44,7 +44,7 @@ async function login(){
         else{
             const data= await response.json();
             const user = {
-                email: data.data.user.email,
+                id: data.data.user.id,
                 roles: data.data.user.roles,}
             auth_store.setUserCred(data.data.auth_token, user)
             alert(data.message);

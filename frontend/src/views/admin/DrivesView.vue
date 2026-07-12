@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useMessageStore } from '@/stores/messageStore'
+import { useMessageStore } from '@/stores/message'
+import { useAuthStore } from '@/stores/auth'
 import { useRoute, useRouter } from 'vue-router'
-
+ 
+const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 const messageStore = useMessageStore()
@@ -29,11 +31,16 @@ async function openDetails(id) {
   loadingDetails.value = true
 
   try {
-    const res = await fetch(`http://127.0.0.1:5000/api/admin/drives/${id}`)
+    const res = await fetch(`http://127.0.0.1:5000/api/admin/drive-details/${id}`,{
+      method:"GET",
+      headers:{
+        "Content-Type": 'application/json',
+        Authorization: authStore.getAuthToken(),
+      }})
     const data = await res.json()
 
     if (!res.ok) {
-      messageStore.updateMessages(data.message || 'Failed to load details')
+      messageStore.updateMessages(data.message || 'Failed to load details', 'danger')
       closeModal()
       return
     }
@@ -41,7 +48,7 @@ async function openDetails(id) {
     selectedDrive.value = data
 
   } catch (err) {
-    messageStore.updateMessages('Error loading details')
+    messageStore.updateMessages('Error loading details', 'danger')
     closeModal()
     console.error(err)
   } finally {
@@ -73,18 +80,23 @@ async function fetchDrives() {
       if (value) params.append(key, value)
     })
 
-    const res = await fetch(`http://127.0.0.1:5000/api/admin/drives?${params}`)
+    const res = await fetch(`http://127.0.0.1:5000/api/admin/drives?${params}`,{
+      method:"GET",
+      headers:{
+        "Content-Type": 'application/json',
+        Authorization: authStore.getAuthToken(),
+      }})
     const data = await res.json()
 
     if (!res.ok) {
-      messageStore.updateMessages(data.message || 'Failed to fetch drives')
+      messageStore.updateMessages(data.message || 'Failed to fetch drives', 'danger')
       return
     }
 
     drives.value = data
 
   } catch (err) {
-    messageStore.updateMessages('Error fetching drives')
+    messageStore.updateMessages('Error fetching drives', 'danger')
     console.error(err)
   } finally {
     loading.value = false
@@ -95,22 +107,26 @@ async function fetchDrives() {
 async function performAction(id, action) {
   try {
     const res = await fetch(
-      `http://127.0.0.1:5000/api/admin/drives/${id}/${action}`,
-      { method: 'PUT' }
+      `http://127.0.0.1:5000/api/admin/drives/${id}/${action}`,{
+      method:"PUT",
+      headers:{
+        "Content-Type": 'application/json',
+        Authorization: authStore.getAuthToken(),
+      }}
     )
 
     const data = await res.json()
 
     if (!res.ok) {
-      messageStore.updateMessages(data.message)
+      messageStore.updateMessages(data.message, 'danger')
       return
     }
 
-    messageStore.updateMessages(data.message)
+    messageStore.updateMessages(data.message, 'success')
     fetchDrives()
 
   } catch (err) {
-    messageStore.updateMessages('Action failed')
+    messageStore.updateMessages('Action failed', 'danger')
     console.error(err)
   }
 }
@@ -122,6 +138,13 @@ onMounted(fetchDrives)
   <div class="container mt-4">
 
     <h2 class="mb-3">Placement Drives</h2>
+
+    <!-- ✅ MESSAGE DISPLAY (NO computed used) -->
+    <div v-if="messageStore.messages.text" class="text-center mb-3">
+      <div :class="`alert alert-${messageStore.messages.type}`">
+        {{ messageStore.messages.text }}
+      </div>
+    </div>
 
     <!-- 🔍 Search -->
     <div class="row g-2 mb-3">
@@ -163,6 +186,7 @@ onMounted(fetchDrives)
 
     <!-- Table -->
     <table v-if="!loading" class="table table-bordered table-hover">
+      <!-- (unchanged below) -->
       <thead class="table-dark">
         <tr>
           <th>ID</th>
@@ -193,14 +217,12 @@ onMounted(fetchDrives)
           </td>
 
           <td>
-            <!-- View Details -->
             <button class="btn btn-info btn-sm me-2"
               :disabled="loadingDetails"
               @click="openDetails(d.id)">
               View Details
             </button>
 
-            <!-- Pending -->
             <div v-if="d.status === 'Pending'">
               <button class="btn btn-success btn-sm me-2"
                 @click="performAction(d.id, 'approve')">
@@ -213,7 +235,6 @@ onMounted(fetchDrives)
               </button>
             </div>
 
-            <!-- Approved -->
             <div v-else-if="d.status === 'Approved'">
               <button class="btn btn-primary btn-sm"
                 @click="viewApplications(d.id)">

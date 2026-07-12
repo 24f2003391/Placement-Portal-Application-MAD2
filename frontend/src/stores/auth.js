@@ -2,14 +2,40 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useAuthStore = defineStore('authStore', () => {
+  // Safely initialize state
   const auth_token = ref(localStorage.getItem('auth_token') || null)
-  const user = ref(JSON.parse(localStorage.getItem('user')) || null)
-  const isAuthenticated = computed(() => auth_token.value !== null)
+  
+  // Safe JSON parsing wrapper
+  const getStoredUser = () => {
+    const stored = localStorage.getItem('user')
+    try {
+      return stored ? JSON.parse(stored) : null
+    } catch (e) {
+      localStorage.removeItem('user') // Clear corrupted data
+      return null
+    }
+  }
+  const user = ref(getStoredUser())
 
-  function setUserCred(token, userData){
-    localStorage.setItem('auth_token', token)
-    localStorage.setItem('user', JSON.stringify(user))
-    auth_token.value = token
+  // --- REACTIVE GETTERS (Computed Properties) ---
+  const isAuthenticated = computed(() => auth_token.value !== null)
+  
+  const token = computed(() => auth_token.value)
+  
+  const userId = computed(() => user.value ? user.value.id : null)
+  
+  // Changed to a computed property so it's fully reactive
+  const userRoles = computed(() => {
+    if (!user.value) return []
+    // Ensure it always returns an array even if the backend sent a single string
+    return Array.isArray(user.value.roles) ? user.value.roles : [user.value.roles]
+  })
+
+  // --- ACTIONS ---
+  function setUserCred(tokenValue, userData) {
+    localStorage.setItem('auth_token', tokenValue)
+    localStorage.setItem('user', JSON.stringify(userData))
+    auth_token.value = tokenValue
     user.value = userData
   }
 
@@ -20,17 +46,15 @@ export const useAuthStore = defineStore('authStore', () => {
     user.value = null
   }
 
-  function getAuthToken() {
-    return auth_token.value
+  return {
+    // State / Getters
+    isAuthenticated, 
+    token, 
+    userId, 
+    userRoles, 
+    user,
+    // Actions
+    setUserCred, 
+    clearAuthToken
   }
-
-  function getUserEmail() {
-    return user.value ? user.value.email : null
-  }
-
-  function getUserRoles(){
-    return user.value ? user.value.roles : []
-  }
-
-  return {isAuthenticated, getAuthToken, getUserEmail, getUserRoles, setUserCred, clearAuthToken}
 })

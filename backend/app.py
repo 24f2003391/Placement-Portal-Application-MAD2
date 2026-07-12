@@ -1,4 +1,4 @@
-from flask import Flask, jsonify,request
+from flask import Flask
 from flask_security import Security,utils
 from flask_restful import Api
 
@@ -33,7 +33,6 @@ with app.app_context():
     db.session.commit()
 
 from controller.auth_api import Login,Logout,StudentRegister,CompanyRegister,CheckEmailAvail,CheckPhoneAvail,CheckRollAvail,GetPrograms
-from controller.admin_api import GetDrives,ApproveDrive,RejectDrive
 
 api.add_resource(Login,'/login')
 api.add_resource(Logout,'/logout')
@@ -45,9 +44,31 @@ api.add_resource(CheckPhoneAvail, '/check-phone')
 api.add_resource(CheckRollAvail, '/check-roll')
 api.add_resource(GetPrograms, '/programs')
 
-api.add_resource(GetDrives, "/api/admin/drives")
-api.add_resource(ApproveDrive, "/api/admin/drives/<int:id>/approve")
-api.add_resource(RejectDrive, "/api/admin/drives/<int:id>/reject")
+from controller.admin_api import GetDrives,ApproveDrive,RejectDrive,GetCompanies,RejectCompany,ApproveCompany,BlacklistCompany,UnblacklistCompany\
+,GetStudents,BlacklistStudent,UnblacklistStudent,GetDriveDetails
+
+api.add_resource(GetDrives, "/admin/drives")
+api.add_resource(GetDrives, "/admin/drive-details/<int:id>")
+api.add_resource(ApproveDrive, "/admin/drives/<int:id>/approve")
+api.add_resource(RejectDrive, "/admin/drives/<int:id>/reject")
+
+api.add_resource(GetCompanies, "/admin/companies")
+api.add_resource(RejectCompany, "/admin/companies/<int:id>/reject")
+api.add_resource(ApproveCompany, "/admin/companies/<int:id>/approve")
+api.add_resource(BlacklistCompany, "/admin/companies/<int:id>/blacklist")
+api.add_resource(UnblacklistCompany, "/admin/companies/<int:id>/unblacklist")
+
+api.add_resource(GetStudents, "/admin/students")
+api.add_resource(BlacklistStudent, "/admin/students/<int:roll_no>/blacklist")
+api.add_resource(UnblacklistStudent, "/admin/students/<int:roll_no>/unblacklist")
+
+from controller.company_api import CompanyDashboard
+
+api.add_resource(
+    CompanyDashboard,
+    "/company/dashboard"
+)
+
 
 if __name__ == '__main__':    
     app.run(debug=True)

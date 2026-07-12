@@ -1,13 +1,17 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useMessageStore } from '@/stores/messageStore'
-import { useAuthStore } from '@/stores/authStore'
+import { useMessageStore } from '@/stores/message'
+import { useAuthStore } from '@/stores/auth'
+import DocumentViewer from '@/components/DocumentViewer.vue'
 
 const authStore = useAuthStore()
 
 const showModal = ref(false)
 const loadingResume = ref(false)
-const resumeUrl = ref('')
+
+const pdfUrl = ref('')
+const title = ref('')
+const details = ref({})
 
 const messageStore = useMessageStore()
 
@@ -22,10 +26,20 @@ const search = ref({
   end_date: ''
 })
 
-async function viewResume(applicationId) {
+async function viewResume(application) {
   showModal.value = true
   loadingResume.value = true
-  resumeUrl.value = ''
+
+  title.value = `Resume - ${application.student_name}`
+
+  details.value = {
+    "Application ID": application.id,
+    "Student": application.student_name,
+    "Roll No": application.student_roll_no,
+    "Job": application.job_title,
+    "Status": application.status,
+    "Applied On": application.application_date
+  }
 
   try {
     const res = await fetch(
@@ -45,7 +59,7 @@ async function viewResume(applicationId) {
     }
 
     const blob = await res.blob()
-    resumeUrl.value = URL.createObjectURL(blob)
+    pdfUrl.value = URL.createObjectURL(blob)
 
   } catch (err) {
     messageStore.updateMessages('Error loading resume')
@@ -58,13 +72,12 @@ async function viewResume(applicationId) {
 
 function closeModal() {
   showModal.value = false
-  resumeUrl.value = ''
+  pdfUrl.value = ''
 }
 
 // 🔹 Fetch
 async function fetchApplications() {
   loading.value = true
-
   try {
     const params = new URLSearchParams()
 
@@ -181,7 +194,7 @@ onMounted(fetchApplications)
           <td>
             <button class="btn btn-info btn-sm"
                 :disabled="loadingResume"
-                @click="viewResume(a.id)">
+                @click="viewResume(a)">
                 View
             </button>
           </td>
@@ -189,79 +202,12 @@ onMounted(fetchApplications)
         </tr>
       </tbody>
     </table>
-    <!-- Resume Modal -->
-    <div v-if="showModal">
-    
-        <!-- backdrop -->
-        <div class="modal-backdrop fade show"></div>
-
-        <div class="modal fade show d-block" tabindex="-1">
-            <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-
-                <!-- Header -->
-                <div class="modal-header">
-                <h5 class="modal-title">Student Resume</h5>
-                <button class="btn-close" @click="closeModal"></button>
-                </div>
-
-                <!-- Body -->
-                <div class="modal-body">
-
-                <!-- Loading -->
-                <div v-if="loadingResume" class="text-center">
-                    <div class="spinner-border"></div>
-                    <p class="mt-2">Loading resume...</p>
-                </div>
-
-                <!-- PDF Preview -->
-                <iframe
-                    v-else-if="resumeUrl"
-                    :src="resumeUrl"
-                    width="100%"
-                    height="500px"
-                    style="border: none;"
-                ></iframe>
-
-                <!-- Error fallback -->
-                <div v-else class="text-center text-danger">
-                    Failed to load resume
-                </div>
-
-                </div>
-
-                <!-- Footer -->
-                <div class="modal-footer">
-
-                <!-- 🔥 Open in new tab -->
-                <a
-                    v-if="resumeUrl"
-                    :href="resumeUrl"
-                    target="_blank"
-                    class="btn btn-primary"
-                >
-                    Open in New Tab
-                </a>
-
-                <!-- 🔥 Download -->
-                <a
-                    v-if="resumeUrl"
-                    :href="resumeUrl"
-                    download="resume.pdf"
-                    class="btn btn-success"
-                >
-                    Download Resume
-                </a>
-
-                <button class="btn btn-secondary" @click="closeModal">
-                    Close
-                </button>
-
-                </div>
-
-            </div>
-        </div>
-    </div>
-    </div>
+    <DocumentViewer 
+      :show="showModal"
+      :title="title"
+      :pdfUrl="pdfUrl"
+      :details="details"
+      @close="showModal = false">
+    </DocumentViewer>
   </div>
 </template>

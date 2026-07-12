@@ -1,11 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useMessageStore } from '@/stores/messageStore'
+import { useMessageStore } from '@/stores/message'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 
 const messageStore = useMessageStore()
+const authStore=useAuthStore()
 
 const students = ref([])
 const loading = ref(false)
@@ -48,18 +50,23 @@ async function fetchStudents() {
       }
     })
 
-    const res = await fetch(`http://127.0.0.1:5000/api/admin/students?${params}`)
+    const res = await fetch(`http://127.0.0.1:5000/api/admin/students?${params}`,{
+      method: 'GET',
+      headers:{
+        "Content-Type": 'application/json',
+        Authorization: authStore.getAuthToken(),
+      }})
     const data = await res.json()
 
     if (!res.ok) {
-      messageStore.updateMessages(data.message || 'Failed to fetch students')
+      messageStore.updateMessages(data.message || 'Failed to fetch students', 'danger')
       return
     }
 
     students.value = data
 
   } catch (err) {
-    messageStore.updateMessages('Something went wrong while fetching students')
+    messageStore.updateMessages('Something went wrong while fetching students', 'danger')
     console.error(err)
   } finally {
     loading.value = false
@@ -68,26 +75,24 @@ async function fetchStudents() {
 
 async function performAction(roll_no, action) {
   try {
-    let url = ''
-    if (action === 'blacklist') {
-      url = `http://127.0.0.1:5000/api/admin/companies/${roll_no}/blacklist`
-    } else if (action === 'unblacklis') {
-      url = `http://127.0.0.1:5000/api/admin/companies/${roll_no}/unblacklist`
-    } 
-    const res = await fetch(url, {
-      method: 'PUT'
+    const res = await fetch(`http://127.0.0.1:5000/api/admin/students/${roll_no}/${action}`, {
+      method: 'PUT',
+      headers:{
+          "Content-Type": 'application/json',
+          Authorization: authStore.getAuthToken(),
+      }
     })
     const data = await res.json()
     if (!res.ok) {
-      messageStore.updateMessages(data.message || 'Action failed')
+      messageStore.updateMessages(data.message || 'Action failed', 'danger')
       return
     }
 
-    messageStore.updateMessages(data.message)
+    messageStore.updateMessages(data.message, 'success')
     fetchStudents()
 
   } catch (err) {
-    messageStore.updateMessages('Something went wrong while performing action')
+    messageStore.updateMessages('Something went wrong while performing action', 'danger')
     console.error(err)
   }
 }
@@ -97,8 +102,6 @@ onMounted(fetchStudents)
 
 <template>
   <div class="container mt-4">
-
-    <h2 class="mb-3">Admin Dashboard - Students</h2>
 
     <!-- 🔍 Search -->
     <div class="row g-2 mb-3">
@@ -124,8 +127,8 @@ onMounted(fetchStudents)
                 <option disabled value="">Select a program</option>
                 <option 
                 v-for="prog in programs" 
-                v-bind:key="prog.code" 
-                v-bind:value="prog.code"
+                :key="prog.code" 
+                :value="prog.code"
                 >
                 {{ prog.name }} ({{ prog.code }})
                 </option>
@@ -161,7 +164,6 @@ onMounted(fetchStudents)
           <th>Program</th>
           <th>CGPA</th>
           <th>Year</th>
-          <th>Blacklisted</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -174,15 +176,7 @@ onMounted(fetchStudents)
           <td>{{ s.program_name }}</td>
           <td>{{ s.cgpa }}</td>
           <td>{{ s.year_in_program }}</td>
-
           <td>
-            <span :class="s.is_blacklisted ? 'text-danger' : 'text-success'">
-              {{ s.is_blacklisted ? 'Yes' : 'No' }}
-            </span>
-          </td>
-
-          <td>
-
             <button class="btn btn-info btn-sm me-2"
                 @click="viewApplications(s.roll_no)">
                 View Applications

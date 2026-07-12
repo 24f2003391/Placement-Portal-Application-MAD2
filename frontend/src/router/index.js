@@ -7,7 +7,7 @@ const router = createRouter({
     {
       path:'/',
       name:'home',
-      component: ()=> import('../views/HomwView.vue')
+      component: ()=> import('../views/HomeView.vue')
     },
     {
       path:'/login',
@@ -30,6 +30,31 @@ const router = createRouter({
       meta: { requiresAuth: true, role: 'admin' }
     },
     {
+      path: '/admin/companies',
+      component: () => import('@/views/admin/CompaniesView.vue'),
+      meta: { requiresAuth: true, role: 'admin' }
+    },
+    {
+      path: '/admin/students',
+      component: () => import('@/views/admin/StudentsView.vue'),
+      meta: { requiresAuth: true, role: 'admin' }
+    },
+    {
+      path: '/admin/placement-drives',
+      component: () => import('@/views/admin/DrivesView.vue'),
+      meta: { requiresAuth: true, role: 'admin' }
+    },
+    {
+      path: '/admin/applications',
+      component: () => import('@/views/admin/ApplicationsView.vue'),
+      meta: { requiresAuth: true, role: 'admin' }
+    },
+    {
+      path: '/admin/programs',
+      component: () => import('@/views/admin/ProgramsView.vue'),
+      meta: { requiresAuth: true, role: 'admin' }
+    },
+    {
       path: '/student',
       component: () => import('@/views/student/DashboardView.vue'),
       meta: { requiresAuth: true, role: 'student' }
@@ -37,8 +62,32 @@ const router = createRouter({
     {
       path: '/company',
       component: () => import('@/views/company/DashboardView.vue'),
-      meta: { requiresAuth: true, role: 'student' }
+      meta: { requiresAuth: true, role: 'company' }
     },
+    {
+    path: '/company/placement-drives',
+    component: () => import('@/views/company/DrivesView.vue'),
+    meta: {
+      requiresAuth: true,
+      role: 'company'
+    }
+    },
+    {
+      path: '/company/placement-drives/new',
+      component: () => import('@/views/company/CreateDriveView.vue'),
+      meta: {
+        requiresAuth: true,
+        role: 'company'
+      }
+    },
+    {
+      path: '/company/placement-drives/:id',
+      component: () => import('@/views/company/DriveDetailsView.vue'),
+      meta: {
+        requiresAuth: true,
+        role: 'company'
+      }
+    }
   ],
 })
 
@@ -46,17 +95,24 @@ router.beforeEach((to,from) => {
   const auth = useAuthStore()
 
   const isAuthenticated = auth.isAuthenticated
-  const roles = auth.getUserRoles()
+  const roles = auth.userRoles
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     return '/login'
   }
 
   if (to.meta.role && !roles.includes(to.meta.role)) {
-    if (roles.includes('admin')) return '/admin'
-    if (roles.includes('student')) return '/student'
-    if (roles.includes('company')) return '/company'
-    return '/'
+    let redirectPath = '/'
+
+    // Determine the correct home base for their role
+    if (roles.includes('admin')) redirectPath = '/admin'
+    else if (roles.includes('student')) redirectPath = '/student'
+    else if (roles.includes('company')) redirectPath = '/company'
+
+    // Only redirect if they are not already trying to go to that exact path
+    if (to.path !== redirectPath) {
+      return redirectPath
+    }
   }
 })
 

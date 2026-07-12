@@ -69,7 +69,7 @@ class Company(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False, unique=True)
     user = db.relationship('User',back_populates='company', uselist=False)
-    placement_drives = db.relationship('Placement_Drive', back_populates="company", uselist=True)
+    placement_drives = db.relationship('Placement_Drive', back_populates="company", uselist=True,lazy="selectin")
 
 class Application(db.Model):
     __tablename__ = 'application'
@@ -84,6 +84,21 @@ class Application(db.Model):
     student = db.relationship('Student', back_populates="applications", uselist=False)
     placement_drive = db.relationship('Placement_Drive', back_populates="applications", uselist=False)
     resume = db.relationship('Resume', uselist=False)
+    offers = db.relationship('Offer', back_populates='application', uselist=True)
+
+class Offer(db.Model):
+    __tablename__ = 'offer'
+    id = db.Column(db.Integer, primary_key=True)
+    application_id = db.Column(db.Integer, db.ForeignKey('application.id'), nullable=False)
+
+    package = db.Column(db.Float, nullable=False)  
+    job_role = db.Column(db.String(100), nullable=False)
+    joining_date = db.Column(db.DateTime, nullable=True)
+
+    status = db.Column(db.Enum('Offered', 'Accepted', 'Rejected'),default='Offered',nullable=False)
+    offer_letter_path = db.Column(db.Text, nullable= False)
+
+    application = db.relationship('Application', back_populates='offers',lazy="selectin")
 
 class Placement_Drive(db.Model):
     __tablename__ = 'placement_drive'

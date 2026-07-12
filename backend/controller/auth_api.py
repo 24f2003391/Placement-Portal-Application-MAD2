@@ -91,6 +91,10 @@ class Login(Resource):
             result={'message':'Invalid credentials'}
             return make_response(jsonify(result),401)
         
+        if not user.active:
+            response={'message':'User has been blacklisted'}
+            return make_response(jsonify(response),403)
+        
         if user.has_role('company'):
             if user.company.approval_status=='Applied':
                 response={'message':'Company registration has not been approved yet'}
@@ -105,7 +109,7 @@ class Login(Resource):
             'message':'Login successful',
             'data':{
                 'user':{
-                    'email':user.email,
+                    'id':user.id,
                     'roles':[role.name for role in user.roles]},
                 'auth_token':auth_token
             }

@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useMessageStore } from '@/stores/messageStore'
+import { useMessageStore } from '@/stores/message'
+import { useAuthStore } from '@/stores/auth'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
 const messageStore = useMessageStore()
-
+const authStore = useAuthStore()
 const companies = ref([])
 const loading = ref(false)
 
@@ -36,10 +37,16 @@ async function fetchCompanies() {
         params.append(key, value)
       }
     })
-    const res = await fetch(`http://127.0.0.1:5000/api/admin/companies?${params}`)
+    const res = await fetch(`http://127.0.0.1:5000/api/admin/companies?${params}`,{
+      method:"GET",
+      headers:{
+        "Content-Type": 'application/json',
+        Authorization: authStore.getAuthToken(),
+      }}
+    )
     const data = await res.json()
     if (!res.ok) {
-      messageStore.updateMessages(data.message || 'Failed to fetch companies')
+      messageStore.updateMessages(data.message || 'Failed to fetch companies', 'danger')
       return
     }
     const order = { Approved: 1, Applied: 2, Rejected: 3 }
@@ -47,46 +54,44 @@ async function fetchCompanies() {
       return order[a.approval_status] - order[b.approval_status]
     })
   } catch (err) {
-    messageStore.updateMessages('Something went wrong while fetching companies')
+    messageStore.updateMessages('Something went wrong while fetching companies', 'danger')
     console.error(err)
   } finally {
     loading.value = false
   }
 }
+
 async function performAction(id, action) {
   try {
-    let url = ''
-    if (action === 'approve') {
-      url = `http://127.0.0.1:5000/api/admin/companies/${id}/approve`
-    } else if (action === 'reject') {
-      url = `http://127.0.0.1:5000/api/admin/companies/${id}/reject`
-    } else if (action === 'blacklist') {
-      url = `http://127.0.0.1:5000/api/admin/companies/${id}/blacklist`
-    } else if (action === 'unblacklist') {
-      url = `http://127.0.0.1:5000/api/admin/companies/${id}/unblacklist`
-    }
-    const res = await fetch(url, {
-      method: 'PUT'
+    const res = await fetch(`http://127.0.0.1:5000/api/admin/companies/${id}/${action}`, {
+      method: 'PUT',
+      headers:{
+        "Content-Type": 'application/json',
+        Authorization: authStore.getAuthToken(),
+      }
     })
+
     const data = await res.json()
+
     if (!res.ok) {
-      messageStore.updateMessages(data.message || 'Action failed')
+      messageStore.updateMessages(data.message || 'Action failed', 'danger')
       return
     }
-    messageStore.updateMessages(data.message)
+
+    messageStore.updateMessages(data.message, 'success')
     fetchCompanies()
+
   } catch (err) {
-    messageStore.updateMessages('Something went wrong while performing action')
+    messageStore.updateMessages('Something went wrong while performing action', 'danger')
     console.error(err)
   }
 }
+
 onMounted(fetchCompanies)
 </script>
 
 <template>
   <div class="container mt-4">
-
-    <h2 class="mb-3">Admin Dashboard - Companies</h2>
 
     <div class="row g-2 mb-3">
       <div class="col">
@@ -142,7 +147,6 @@ onMounted(fetchCompanies)
           <th>Phone</th>
           <th>Website</th>
           <th>Status</th>
-          <th>Blacklisted</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -164,13 +168,6 @@ onMounted(fetchCompanies)
               }"
             >
               {{ c.approval_status }}
-            </span>
-          </td>
-
-          <!-- Blacklist -->
-          <td>
-            <span :class="c.is_blacklisted ? 'text-danger' : 'text-success'">
-              {{c.is_blacklisted ? 'Yes' : 'No'}}
             </span>
           </td>
           <td>
@@ -205,10 +202,10 @@ onMounted(fetchCompanies)
               </button>
 
             </div>
+
             <div v-else>
               <span class="text-muted">No actions</span>
             </div>
-
           </td>
         </tr>
       </tbody>
