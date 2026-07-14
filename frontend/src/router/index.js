@@ -87,6 +87,22 @@ const router = createRouter({
         requiresAuth: true,
         role: 'company'
       }
+    },
+    {
+      path: '/company/offers/new/:application_id',
+      component: () => import('@/views/company/OfferFormView.vue'),
+      meta: {
+        requiresAuth: true,
+        role: 'company'
+      }
+    },
+    {
+      path: '/company/offers/:offer_id',
+      component: () => import('@/views/company/OfferDetailsView.vue'),
+      meta: {
+        requiresAuth: true,
+        role: 'company'
+      }
     }
   ],
 })

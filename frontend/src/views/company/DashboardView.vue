@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
-import { useMessageStore } from '@/stores/messageStore'
+import { useAuthStore } from '@/stores/auth'
+import { useMessageStore } from '@/stores/message'
 
 const router = useRouter()
 

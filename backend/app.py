@@ -62,12 +62,64 @@ api.add_resource(GetStudents, "/admin/students")
 api.add_resource(BlacklistStudent, "/admin/students/<int:roll_no>/blacklist")
 api.add_resource(UnblacklistStudent, "/admin/students/<int:roll_no>/unblacklist")
 
-from controller.company_api import CompanyDashboard
+from controller.company_api import CompanyDashboard,CompanyDrives,CloseDrive,\
+CancelInterview,CompanyInterview,CompanyViewResume,CompleteInterview,CompanyDriveApplications,\
+CompanyDriveDetails,UpdateApplicationStatus,CompanyOffer,CompanyOfferDetails
+
+api.add_resource(CompanyDashboard,"/company/dashboard")
+api.add_resource(
+    CompanyDrives,
+    "/company/drives"
+)
 
 api.add_resource(
-    CompanyDashboard,
-    "/company/dashboard"
+    CloseDrive,
+    "/company/drives/<int:id>/close"
 )
+api.add_resource(
+    CompanyInterview,
+    "/company/applications/<int:application_id>/interview"
+)
+
+api.add_resource(
+    CancelInterview,
+    "/company/interviews/<int:interview_id>/cancel"
+)
+
+api.add_resource(
+    CompleteInterview,
+    "/company/interviews/<int:interview_id>/complete"
+)
+
+api.add_resource(
+    CompanyViewResume,
+    "/company/applications/<int:application_id>/resume"
+)
+
+api.add_resource(
+    CompanyDriveDetails,
+    "/company/drives/<int:drive_id>"
+)
+
+api.add_resource(
+    CompanyDriveApplications,
+    "/company/drives/<int:drive_id>/applications"
+)
+api.add_resource(
+    UpdateApplicationStatus,
+    "/company/applications/<int:application_id>"
+)
+
+api.add_resource(
+    CompanyOffer,
+    "/api/company/applications/<int:application_id>/offer"
+)
+
+api.add_resource(
+    CompanyOfferDetails,
+    "/api/company/offers/<int:offer_id>"
+)
+
 
 
 if __name__ == '__main__':    

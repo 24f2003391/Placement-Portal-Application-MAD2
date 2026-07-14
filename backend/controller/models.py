@@ -36,7 +36,8 @@ class Student(db.Model):
 
     program_code = db.Column(db.String(10),db.ForeignKey('program.code'), nullable=False)  
     cgpa = db.Column(db.Float, nullable=False)  
-    year_in_program= db.Column(db.Integer, nullable=False)   
+    year_in_program= db.Column(db.Integer, nullable=False)
+    placed=db.Column(db.Boolean,default=False)   
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False,unique=True)
     user = db.relationship('User',back_populates='student', uselist=False)
@@ -84,7 +85,13 @@ class Application(db.Model):
     student = db.relationship('Student', back_populates="applications", uselist=False)
     placement_drive = db.relationship('Placement_Drive', back_populates="applications", uselist=False)
     resume = db.relationship('Resume', uselist=False)
-    offers = db.relationship('Offer', back_populates='application', uselist=True)
+    offer = db.relationship('Offer', back_populates='application', uselist=False)
+    interview = db.relationship(
+    "Interview",
+    back_populates="application",
+    uselist=False,
+    cascade="all, delete-orphan"
+)
 
 class Offer(db.Model):
     __tablename__ = 'offer'
@@ -98,7 +105,8 @@ class Offer(db.Model):
     status = db.Column(db.Enum('Offered', 'Accepted', 'Rejected'),default='Offered',nullable=False)
     offer_letter_path = db.Column(db.Text, nullable= False)
 
-    application = db.relationship('Application', back_populates='offers',lazy="selectin")
+    application = db.relationship('Application', back_populates='offer',lazy="selectin",uselist=False
+)
 
 class Placement_Drive(db.Model):
     __tablename__ = 'placement_drive'
@@ -115,12 +123,75 @@ class Placement_Drive(db.Model):
     applications = db.relationship('Application', back_populates="placement_drive", uselist=True)
 
 class Eligibility(db.Model):
-    __tablename__ = 'eligibility'
-    eligibility_id = db.Column(db.Integer, primary_key=True, autoincrement=True)  
-    drive_id = db.Column(db.Integer, db.ForeignKey('placement_drive.id'), nullable=False)  
-    
-    program = db.Column(db.String(100), nullable=False)  
-    min_cgpa = db.Column(db.Float, nullable=False)       
-    year = db.Column(db.Integer, nullable=False)         
-    
-    placement_drive = db.relationship('Placement_Drive', back_populates="eligibility", uselist=False)
+    __tablename__ = "eligibility"
+
+    eligibility_id = db.Column(db.Integer, primary_key=True)
+
+    drive_id = db.Column(
+        db.Integer,
+        db.ForeignKey("placement_drive.id"),
+        nullable=False
+    )
+
+    program_code = db.Column(
+        db.String(10),
+        db.ForeignKey("program.code"),
+        nullable=False
+    )
+
+    min_cgpa = db.Column(db.Float, nullable=False)
+
+    eligible_year = db.Column(db.Integer, nullable=False)
+
+    placement_drive = db.relationship(
+        "Placement_Drive",
+        back_populates="eligibility"
+    )
+
+    program = db.relationship(
+        "Program",
+        uselist=False
+    )
+
+class Interview(db.Model):
+    __tablename__ = "interview"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    application_id = db.Column(
+        db.Integer,
+        db.ForeignKey("application.id"),
+        nullable=False,
+        unique=True
+    )
+
+    company_id = db.Column(
+    db.Integer,
+    db.ForeignKey("company.id"),
+    nullable=False
+)
+
+    interview_datetime = db.Column(
+        db.DateTime,
+        nullable=False
+    )
+
+    interview_details = db.Column(
+    db.Text,
+    nullable=False
+)
+
+    status = db.Column(
+        db.Enum(
+            "Scheduled",
+            "Completed",
+            "Cancelled"
+        ),
+        default="Scheduled",
+        nullable=False
+    )
+
+    application = db.relationship(
+        "Application",
+        uselist=False
+    )
