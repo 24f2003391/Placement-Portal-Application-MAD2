@@ -112,14 +112,55 @@ api.add_resource(
 
 api.add_resource(
     CompanyOffer,
-    "/api/company/applications/<int:application_id>/offer"
+    "/company/applications/<int:application_id>/offer"
 )
 
 api.add_resource(
     CompanyOfferDetails,
-    "/api/company/offers/<int:offer_id>"
+    "/company/offers/<int:offer_id>"
 )
 
+from controller.student_api import StudentDashboard,StudentProfile,StudentPlacementDrives,StudentPlacementDrive\
+,ApplyPlacementDrive,AcceptOffer,RejectOffer,StudentApplication,DownloadOffer
+
+api.add_resource(StudentDashboard,"student/dashboard")
+api.add_resource(
+    StudentProfile,
+    "/student/profile"
+)
+api.add_resource(
+    StudentPlacementDrives,
+    "student/placement-drives"
+)
+api.add_resource(
+    StudentPlacementDrive,
+    "/student/placement-drives/<int:id>"
+)
+
+api.add_resource(
+    ApplyPlacementDrive,
+    "/student/placement-drives/<int:id>/apply"
+)
+
+api.add_resource(
+    StudentApplication,
+    "/api/student/applications/<int:id>"
+)
+
+api.add_resource(
+    DownloadOffer,
+    "/api/student/offers/<int:offer_id>/download"
+)
+
+api.add_resource(
+    AcceptOffer,
+    "/api/student/offers/<int:offer_id>/accept"
+)
+
+api.add_resource(
+    RejectOffer,
+    "/api/student/offers/<int:offer_id>/reject"
+)
 
 
 if __name__ == '__main__':    
