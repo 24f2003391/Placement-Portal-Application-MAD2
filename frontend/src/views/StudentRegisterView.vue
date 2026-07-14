@@ -1,8 +1,10 @@
 <script setup>
-import { ref,onMounted } from 'vue';
+import { ref,onMounted,computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useMessageStore } from '@/stores/message';
 
 const router=useRouter();
+const messageStore = useMessageStore()
 
 const email = ref('');
 const password = ref('');
@@ -20,6 +22,10 @@ const phoneStatus = ref('');
 const formError = ref('');
 
 const programs = ref([]);
+
+const selectedProgram = computed(() =>
+    programs.value.find(p => p.code === program_code.value)
+)
 
 onMounted(async () => {
   try {
@@ -42,6 +48,7 @@ const validatePassword = () => {
 }
 
 const checkEmail = async () => {
+  emailStatus.value = ''
   if (!email.value) return
   try {
     const response = await fetch('http://127.0.0.1:5000/api/check-email', {
@@ -51,7 +58,7 @@ const checkEmail = async () => {
     })
     const data = await response.json()
     if (!response.ok) {
-      alert(`Email check failed: ${data.message}`)
+      messageStore.updateMessages(`Email check failed: ${data.message}`,'danger')
       return
     } else {
       emailStatus.value = data.available
@@ -65,6 +72,7 @@ const checkEmail = async () => {
 }
 
 const checkPhone = async () => {
+  phoneStatus.value = ''
   if (!phone_no.value) return
 
   try {
@@ -77,7 +85,7 @@ const checkPhone = async () => {
     const data = await response.json()
 
     if (!response.ok) {
-      alert(`Phone check failed: ${data.message || 'Unknown error'}`)
+      messageStore.updateMessages(`Phone check failed: ${data.message || 'Unknown error'}`,'danger')
       return
     } else {
       phoneStatus.value = data.available
@@ -92,6 +100,7 @@ const checkPhone = async () => {
 }
 
 const checkRoll = async () => {
+  rollStatus.value = ''
   if (!roll_no.value) return
 
   try {
@@ -104,7 +113,7 @@ const checkRoll = async () => {
     const data = await response.json()
 
     if (!response.ok) {
-      alert(`Roll number check failed: ${data.message}`)
+      messageStore.updateMessages(`Roll number check failed: ${data.message}`,'danger')
       return
     } else {
       rollStatus.value = data.available
@@ -123,8 +132,11 @@ async function register() {
     alert('Invalid password')
     return
   }
-  if (!email.value || !password.value || !name.value || !roll_no.value || !phone_no.value || !program_code || !cgpa.value || !year_in_program.value) {
-    alert('All fields are required')
+  if (!email.value || !password.value || !name.value || !roll_no.value || !phone_no.value || !program_code.value || !cgpa.value || !year_in_program.value) {
+    messageStore.updateMessages(
+    'All fields are required',
+    'danger'
+)
     return
   }
 
@@ -138,7 +150,7 @@ async function register() {
         name: name.value,
         roll_no: roll_no.value,
         phone_no: phone_no.value,
-        program_code: program_code,
+        program_code: program_code.value,
         cgpa: cgpa.value,
         year_in_program: year_in_program.value
       })
@@ -150,8 +162,7 @@ async function register() {
       formError.value = data.message
       return
     }
-
-    alert(data.message)
+    messageStore.updateMessages(`${data.message}`)
     router.push({name:'login'})
 
   } catch (err) {
@@ -210,7 +221,7 @@ async function register() {
             <select 
                 id="program"
                 class="form-select"
-                v-model="program">
+                v-model="program_code">
                 <option disabled value="">Select a program</option>
                 <option 
                 v-for="prog in programs" 
@@ -242,10 +253,10 @@ async function register() {
             v-model="year_in_program"
             placeholder="Enter current year"
             min="1"
-            :max="program?.duration"
+            :max="prog?.duration"
             />
             <div class="form-text" v-if="selectedProgram">
-                Program duration: {{ program.duration }} years
+                Program duration: {{ selectedProgram.duration }} years
             </div>
         </div>
 

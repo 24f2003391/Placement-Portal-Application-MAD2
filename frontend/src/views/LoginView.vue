@@ -1,6 +1,12 @@
 <script setup>
 import {ref} from 'vue';
 import { useAuthStore } from '@/stores/auth';
+import { useMessageStore } from '@/stores/message'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const messageStore = useMessageStore()
 
 const auth_store=useAuthStore()
 const email =ref('');
@@ -20,11 +26,17 @@ const validatePassword=()=>{
 
 async function login(){
     if (!validatePassword() ){
-        alert('Invalid password length');
+        messageStore.updateMessages(
+    'Password must be at least 8 characters long',
+    'danger'
+)
         return}
 
     if (email.value === ''|| password.value === '') {
-        alert('Please fill in all the fields');
+        messageStore.updateMessages(
+    'Please fill in all the fields',
+    'danger'
+)
         return}
 
         try {
@@ -38,7 +50,10 @@ async function login(){
         })
         if(!response.ok){
             const errorData = await response.json();
-            alert(`Login failed: ${errorData.message}`);
+            messageStore.updateMessages(
+    `Login failed: ${errorData.message}`,
+    'danger'
+)
             return;
         }
         else{
@@ -47,7 +62,15 @@ async function login(){
                 id: data.data.user.id,
                 roles: data.data.user.roles,}
             auth_store.setUserCred(data.data.auth_token, user)
-            alert(data.message);
+            messageStore.updateMessages(data.message)
+            if (user.roles.includes('admin'))
+                router.push('/admin')
+
+            else if (user.roles.includes('student'))
+                router.push('/student')
+
+            else if (user.roles.includes('company'))
+                router.push('/company')
             return;
         }}
         catch (error){

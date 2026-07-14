@@ -1,7 +1,7 @@
 <script setup>
 import { RouterLink, RouterView, useRouter } from 'vue-router'
-import { useMessageStore } from './stores/message'
-import { useAuthStore } from './stores/auth'
+import { useMessageStore } from '@/stores/message'
+import { useAuthStore } from '@/stores/auth'
 import { computed } from 'vue'
 
 const router = useRouter()
@@ -9,13 +9,15 @@ const router = useRouter()
 const auth_store = useAuthStore()
 const message_store = useMessageStore()
 
+const currentYear = new Date().getFullYear()
+
 // ✅ Logout
 async function logout() {
   try {
     const res = await fetch('http://127.0.0.1:5000/api/logout', {
       method: 'POST',
       headers: {
-        Authorization: auth_store.getAuthToken(),
+        Authorization: auth_store.token,
         'Content-Type': 'application/json',
       },
     })
@@ -32,34 +34,39 @@ async function logout() {
     router.push({ name: 'home' })
   } catch (err) {
     console.error('Logout failed', err)
+    message_store.updateMessages('Logout failed','danger')
   }
+  finally{
+    auth_store.clearAuthToken()
+    router.push('/')
+}
 }
 
 // ✅ Role checks (computed still needed here)
 const isAdmin = computed(() => {
   return (
-    auth_store.isAuthenticated.value &&
+    auth_store.isAuthenticated &&
     auth_store.user?.roles?.includes('admin')
   )
 })
 
 const isStudent = computed(() => {
   return (
-    auth_store.isAuthenticated.value &&
+    auth_store.isAuthenticated &&
     auth_store.user?.roles?.includes('student')
   )
 })
 
 const isCompany = computed(() => {
   return (
-    auth_store.isAuthenticated.value &&
+    auth_store.isAuthenticated &&
     auth_store.user?.roles?.includes('company')
   )
 })
 
 // ✅ Dynamic home link
 const placeMateLink = computed(() => {
-  const roles = auth_store.getUserRoles()
+  const roles = auth_store.userRoles
 
   if (!roles || roles.length === 0) return '/'
   if (roles[0] === 'admin') return '/admin'
@@ -96,21 +103,20 @@ const placeMateLink = computed(() => {
               <li class="nav-item"><RouterLink class="nav-link" to="/admin/students">Students</RouterLink></li>
               <li class="nav-item"><RouterLink class="nav-link" to="/admin/placement-drives">Placement Drives</RouterLink></li>
               <li class="nav-item"><RouterLink class="nav-link" to="/admin/applications">Applications</RouterLink></li>
-              <li class="nav-item"><RouterLink class="nav-link" to="/admin/programs">Programs</RouterLink></li>
               <li class="nav-item"><a class="nav-link" href="#" @click.prevent="logout">Logout</a></li>
             </template>
 
             <!-- COMPANY -->
             <template v-else-if="isCompany">
               <li class="nav-item"><RouterLink class="nav-link" to="/company/placement-drives">Placement Drives</RouterLink></li>
+              <li class="nav-item"><RouterLink class="nav-link" to="/company/placement-drives/new">Create Placement Drive</RouterLink></li>
               <li class="nav-item"><a class="nav-link" href="#" @click.prevent="logout">Logout</a></li>
             </template>
 
             <!-- STUDENT -->
             <template v-else-if="isStudent">
-              <li class="nav-item"><RouterLink class="nav-link" to="/student/placement-drives">Placement Drives</RouterLink></li>
-              <li class="nav-item"><RouterLink class="nav-link" to="/student/edit-profile">Edit Profile</RouterLink></li>
-              <li class="nav-item"><RouterLink class="nav-link" to="/student/history">History</RouterLink></li>
+              <li class="nav-item"><RouterLink class="nav-link" to="/student/profile">Edit Profile</RouterLink></li>
+              <li class="nav-item"><RouterLink class="nav-link" to="/student/placement-drives">Browse Jobs</RouterLink></li>
               <li class="nav-item"><a class="nav-link" href="#" @click.prevent="logout">Logout</a></li>
             </template>
 
@@ -126,12 +132,12 @@ const placeMateLink = computed(() => {
       </div>
     </nav>
 
-    <div class="container-fluid">
-      <!-- ✅ DIRECT STORE USAGE -->
-      <p 
-        v-if="message_store.messages.text" 
+    <main class="container-fluid flex-grow-1">
+
+      <div
+        v-if="message_store.messages.text"
         :class="[
-          'text-center mt-3 alert',
+          'alert mt-3 text-center',
           {
             'alert-success': message_store.messages.type === 'success',
             'alert-danger': message_store.messages.type === 'danger',
@@ -141,9 +147,20 @@ const placeMateLink = computed(() => {
         ]"
       >
         {{ message_store.messages.text }}
-      </p>
+      </div>
 
       <RouterView />
-    </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-3 mt-auto">
+      <div class="container text-center">
+        <small>
+          © {{ currentYear }} PlaceMate. All Rights Reserved.
+        </small>
+      </div>
+    </footer>
+
   </div>
 </template>

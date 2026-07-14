@@ -55,13 +55,13 @@ async function fetchDashboard() {
   }
 }
 
-function createDrive() {
-  router.push('/company/placement-drives/new')
-}
+// function createDrive() {
+//   router.push('/company/placement-drives/new')
+// }
 
-function manageDrives() {
-  router.push('/company/placement-drives')
-}
+// function manageDrives() {
+//   router.push('/company/placement-drives')
+// }
 
 function viewDrive(id) {
   router.push(`/company/placement-drives/${id}`)
@@ -82,7 +82,7 @@ onMounted(fetchDashboard)
       </p>
     </div>
 
-    <div>
+    <!-- <div>
 
       <button
         class="btn btn-success me-2"
@@ -100,7 +100,7 @@ onMounted(fetchDashboard)
 
       </button>
 
-    </div>
+    </div> -->
 
   </div>
 

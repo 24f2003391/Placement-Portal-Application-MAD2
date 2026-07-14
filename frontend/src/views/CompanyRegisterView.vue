@@ -1,8 +1,10 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useMessageStore } from '@/stores/message';
 
 const router=useRouter();
+const messageStore = useMessageStore()
 
 const email = ref('');
 const password = ref('');
@@ -27,6 +29,7 @@ const validatePassword = () => {
 }
 
 const checkEmail = async () => {
+  emailStatus.value = ''
   if (!email.value) return
   try {
     const response = await fetch('http://127.0.0.1:5000/api/check-email', {
@@ -36,7 +39,7 @@ const checkEmail = async () => {
     })
     const data = await response.json()
     if (!response.ok) {
-      alert(`Email check failed: ${data.message}`)
+      messageStore.updateMessages(`Email check failed: ${data.message}`, 'danger')
       return
     } else {
       emailStatus.value = data.available
@@ -50,6 +53,7 @@ const checkEmail = async () => {
 }
 
 const checkPhone = async () => {
+  phoneStatus.value = ''
   if (!hr_phone.value) return
 
   try {
@@ -61,7 +65,7 @@ const checkPhone = async () => {
 
     const data = await response.json()
     if (!response.ok) {
-      alert(`Phone check failed: ${data.message}`)
+      messageStore.updateMessages(`Phone check failed: ${data.message}`, 'danger')
       return
     } else {
       phoneStatus.value = data.available
@@ -77,12 +81,12 @@ const checkPhone = async () => {
 async function register() {
   formError.value = ''
   if (!validatePassword()) {
-    alert('Invalid password length')
+    messageStore.updateMessages('Invalid password length', 'danger')
     return
   }
 
   if (!email.value || !password.value || !name.value || !industry.value || !hr_phone.value) {
-    alert('Please fill all required fields')
+    messageStore.updateMessages('Please fill all required fields', 'danger')
     return
   }
 
@@ -105,7 +109,7 @@ async function register() {
       formError.value = data.message
       return
     }
-    alert(data.message)
+    messageStore.updateMessages(data.message)
     router.push({name:'login'})
   } catch (error) {
     formError.value = 'Something went wrong'

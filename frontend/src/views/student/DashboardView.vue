@@ -59,13 +59,13 @@ async function fetchDashboard() {
   }
 }
 
-function editProfile() {
-  router.push('/student/profile')
-}
+// function editProfile() {
+//   router.push('/student/profile')
+// }
 
-function browseDrives() {
-  router.push('/student/placement-drives')
-}
+// function browseDrives() {
+//   router.push('/student/placement-drives')
+// }
 
 function viewApplication(id) {
   router.push(`/student/applications/${id}`)
@@ -92,7 +92,7 @@ onMounted(fetchDashboard)
 
     </div>
 
-    <div>
+    <!-- <div>
 
       <button
         class="btn btn-primary me-2"
@@ -110,7 +110,7 @@ onMounted(fetchDashboard)
 
       </button>
 
-    </div>
+    </div> -->
 
   </div>
 

@@ -10,7 +10,8 @@ export const useAuthStore = defineStore('authStore', () => {
     const stored = localStorage.getItem('user')
     try {
       return stored ? JSON.parse(stored) : null
-    } catch (e) {
+    } catch (error) {
+      console.error(error)
       localStorage.removeItem('user') // Clear corrupted data
       return null
     }

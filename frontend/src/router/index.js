@@ -7,22 +7,22 @@ const router = createRouter({
     {
       path:'/',
       name:'home',
-      component: ()=> import('../views/HomeView.vue')
+      component: ()=> import('@/views/HomeView.vue')
     },
     {
       path:'/login',
       name:'login',
-      component: ()=> import('../views/LoginView.vue')
+      component: ()=> import('@/views/LoginView.vue')
     },
     {
       path:'/register-company',
       name:'register-company',
-      component: ()=> import('../views/CompanyRegisterView.vue')
+      component: ()=> import('@/views/CompanyRegisterView.vue')
     },
     {
       path:'/register-student',
-      name:'register-studenty',
-      component: ()=> import('../views/StudentRegisterView.vue')
+      name:'register-student',
+      component: ()=> import('@/views/StudentRegisterView.vue')
     },
     {
       path: '/admin',
@@ -48,16 +48,6 @@ const router = createRouter({
       path: '/admin/applications',
       component: () => import('@/views/admin/ApplicationsView.vue'),
       meta: { requiresAuth: true, role: 'admin' }
-    },
-    {
-      path: '/admin/programs',
-      component: () => import('@/views/admin/ProgramsView.vue'),
-      meta: { requiresAuth: true, role: 'admin' }
-    },
-    {
-      path: '/student',
-      component: () => import('@/views/student/DashboardView.vue'),
-      meta: { requiresAuth: true, role: 'student' }
     },
     {
       path: '/company',
@@ -103,7 +93,33 @@ const router = createRouter({
         requiresAuth: true,
         role: 'company'
       }
-    }
+    },
+    {
+      path: '/student',
+      component: () => import('@/views/student/DashboardView.vue'),
+      meta: { requiresAuth: true, role: 'student' }
+    },
+    {
+      path: '/student/profile',
+      component: () => import('@/views/student/ProfileView.vue'),
+      meta: { requiresAuth: true, role: 'student' }
+    },
+    {
+      path: '/student/placement-drives',
+      component: () => import('@/views/student/JobsView.vue'),
+      meta: { requiresAuth: true, role: 'student' }
+    },
+    {
+      path: '/student/applications/:id',
+      component: () => import('@/views/student/ApplicationsDetailsView.vue'),
+      meta: { requiresAuth: true, role: 'student' }
+    },
+    {
+      path: '/student/placement-drives/:id',
+      component: () => import('@/views/student/ApplyView.vue'),
+      meta: { requiresAuth: true, role: 'student' }
+    },
+    
   ],
 })
 

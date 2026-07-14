@@ -43,7 +43,7 @@ class CheckPhoneAvail(Resource):
         data = request.get_json()
         if not data:
             return make_response(jsonify({'message': 'Request body is required.'}), 400)
-        phone = data.get('phone')
+        phone = data.get('phone_no')
         if not phone:
             return make_response(jsonify({'message': 'Phone number is required.'}), 400)
 
@@ -255,7 +255,7 @@ class CompanyRegister(Resource):
         if existing_comp:
             return make_response(jsonify({'message': f'Phone no. "{hr_phone}" is already registered'}), 400)
         
-        if not all(char.isalpha() or char.isspace() for char in name) or len(name) > 100:
+        if len(name) > 100:
             return make_response(jsonify({'message': 'Name can only contain letters and spaces, max 100 chars'}), 400)
 
         if not all(char.isalpha() or char.isspace() for char in industry) or len(industry) > 100:

@@ -32,7 +32,7 @@ with app.app_context():
         user_datastore.create_user(email="admin@gmail.com",password=utils.hash_password("admin123"),roles=[admin_role])
     db.session.commit()
 
-from controller.auth_api import Login,Logout,StudentRegister,CompanyRegister,CheckEmailAvail,CheckPhoneAvail,CheckRollAvail,GetPrograms
+from controller.auth_helpers_api import Login,Logout,StudentRegister,CompanyRegister,CheckEmailAvail,CheckPhoneAvail,CheckRollAvail,GetPrograms
 
 api.add_resource(Login,'/login')
 api.add_resource(Logout,'/logout')
