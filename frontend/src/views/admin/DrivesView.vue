@@ -35,7 +35,7 @@ async function openDetails(id) {
       method:"GET",
       headers:{
         "Content-Type": 'application/json',
-        Authorization: authStore.getAuthToken(),
+        Authorization: authStore.token,
       }})
     const data = await res.json()
 
@@ -65,9 +65,11 @@ function closeModal() {
 // 🔹 Navigate to applications
 function viewApplications(driveId) {
   router.push({
-    name: 'admin-applications',
-    query: { drive_id: driveId }
-  })
+    path: '/admin/applications',
+    query: {
+        drive_id: driveId
+    }
+})
 }
 
 // 🔹 Fetch drives
@@ -84,7 +86,7 @@ async function fetchDrives() {
       method:"GET",
       headers:{
         "Content-Type": 'application/json',
-        Authorization: authStore.getAuthToken(),
+        Authorization: authStore.token,
       }})
     const data = await res.json()
 
@@ -111,7 +113,7 @@ async function performAction(id, action) {
       method:"PUT",
       headers:{
         "Content-Type": 'application/json',
-        Authorization: authStore.getAuthToken(),
+        Authorization: authStore.token,
       }}
     )
 

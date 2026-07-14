@@ -23,7 +23,7 @@ const search = ref({
 
 function viewDrives(companyId) {
   router.push({
-    name: 'admin-drives',   
+    path: '/admin/placement-drives',   
     query: { company_id: companyId }
   })
 }
@@ -40,8 +40,7 @@ async function fetchCompanies() {
     const res = await fetch(`http://127.0.0.1:5000/api/admin/companies?${params}`,{
       method:"GET",
       headers:{
-        "Content-Type": 'application/json',
-        Authorization: authStore.getAuthToken(),
+        Authorization: authStore.token,
       }}
     )
     const data = await res.json()
@@ -67,7 +66,7 @@ async function performAction(id, action) {
       method: 'PUT',
       headers:{
         "Content-Type": 'application/json',
-        Authorization: authStore.getAuthToken(),
+        Authorization: authStore.token,
       }
     })
 
@@ -79,7 +78,7 @@ async function performAction(id, action) {
     }
 
     messageStore.updateMessages(data.message, 'success')
-    fetchCompanies()
+    await fetchCompanies()
 
   } catch (err) {
     messageStore.updateMessages('Something went wrong while performing action', 'danger')
@@ -95,7 +94,7 @@ onMounted(fetchCompanies)
 
     <div class="row g-2 mb-3">
       <div class="col">
-        <input v-model="search.id" class="form-control" placeholder="ID">
+        <input v-model="search.id" class="form-control" placeholder="ID" type="number">
       </div>
       <div class="col">
         <input v-model="search.name" class="form-control" placeholder="Name">
@@ -152,12 +151,18 @@ onMounted(fetchCompanies)
       </thead>
 
       <tbody>
-        <tr v-for="c in companies" :key="c.id">
-          <td>{{ c.id }}</td>
-          <td>{{ c.name }}</td>
-          <td>{{ c.industry }}</td>
-          <td>{{ c.hr_phone }}</td>
-          <td>{{ c.website }}</td>
+        <tr v-if="companies.length === 0">
+        <td colspan="7" class="text-center">
+          No companies found
+        </td>
+      </tr>
+
+      <tr v-else v-for="c in companies" :key="c.id">
+        <td>{{ c.id }}</td>
+        <td>{{ c.name }}</td>
+        <td>{{ c.industry }}</td>
+        <td>{{ c.hr_phone }}</td>
+        <td>{{ c.website || '-' }}</td>
 
           <td>
             <span 

@@ -45,10 +45,10 @@ api.add_resource(CheckRollAvail, '/check-roll')
 api.add_resource(GetPrograms, '/programs')
 
 from controller.admin_api import GetDrives,ApproveDrive,RejectDrive,GetCompanies,RejectCompany,ApproveCompany,BlacklistCompany,UnblacklistCompany\
-,GetStudents,BlacklistStudent,UnblacklistStudent,GetDriveDetails
+,GetStudents,BlacklistStudent,UnblacklistStudent,GetDriveDetails,GetApplications,GetResume,GetStudentPlacement,DownloadOffer,AdminDashboard
 
 api.add_resource(GetDrives, "/admin/drives")
-api.add_resource(GetDrives, "/admin/drive-details/<int:id>")
+api.add_resource(GetDriveDetails, "/admin/drive-details/<int:id>")
 api.add_resource(ApproveDrive, "/admin/drives/<int:id>/approve")
 api.add_resource(RejectDrive, "/admin/drives/<int:id>/reject")
 
@@ -61,6 +61,26 @@ api.add_resource(UnblacklistCompany, "/admin/companies/<int:id>/unblacklist")
 api.add_resource(GetStudents, "/admin/students")
 api.add_resource(BlacklistStudent, "/admin/students/<int:roll_no>/blacklist")
 api.add_resource(UnblacklistStudent, "/admin/students/<int:roll_no>/unblacklist")
+
+api.add_resource(
+    GetApplications,
+    "/admin/applications"
+)
+
+api.add_resource(
+    GetResume,
+    "/admin/applications/<int:application_id>/resume"
+)
+api.add_resource(
+    GetStudentPlacement,
+    "/admin/students/<int:roll_no>/placement"
+)
+
+api.add_resource(
+    DownloadOffer,
+    "/admin/offers/<int:offer_id>/download"
+)
+api.add_resource(AdminDashboard, "/admin/dashboard")
 
 from controller.company_api import CompanyDashboard,CompanyDrives,CloseDrive,\
 CancelInterview,CompanyInterview,CompanyViewResume,CompleteInterview,CompanyDriveApplications,\
@@ -121,16 +141,16 @@ api.add_resource(
 )
 
 from controller.student_api import StudentDashboard,StudentProfile,StudentPlacementDrives,StudentPlacementDrive\
-,ApplyPlacementDrive,AcceptOffer,RejectOffer,StudentApplication,DownloadOffer
+,ApplyPlacementDrive,AcceptOffer,RejectOffer,StudentApplication,DownloadStudentOffer
 
-api.add_resource(StudentDashboard,"student/dashboard")
+api.add_resource(StudentDashboard,"/student/dashboard")
 api.add_resource(
     StudentProfile,
     "/student/profile"
 )
 api.add_resource(
     StudentPlacementDrives,
-    "student/placement-drives"
+    "/student/placement-drives"
 )
 api.add_resource(
     StudentPlacementDrive,
@@ -144,22 +164,22 @@ api.add_resource(
 
 api.add_resource(
     StudentApplication,
-    "/api/student/applications/<int:id>"
+    "/student/applications/<int:id>"
 )
 
 api.add_resource(
-    DownloadOffer,
-    "/api/student/offers/<int:offer_id>/download"
+    DownloadStudentOffer,
+    "/student/offers/<int:offer_id>/download"
 )
 
 api.add_resource(
     AcceptOffer,
-    "/api/student/offers/<int:offer_id>/accept"
+    "/student/offers/<int:offer_id>/accept"
 )
 
 api.add_resource(
     RejectOffer,
-    "/api/student/offers/<int:offer_id>/reject"
+    "/student/offers/<int:offer_id>/reject"
 )
 
 

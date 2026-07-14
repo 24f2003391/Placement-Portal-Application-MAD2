@@ -1,5 +1,5 @@
 from flask_restful import Resource
-from flask import jsonify, make_response, request
+from flask import jsonify, make_response, request, send_file
 from flask_security import auth_token_required, current_user,hash_password,roles_required
 
 from models import (
@@ -598,7 +598,6 @@ class ApplyPlacementDrive(Resource):
             201
         )
 
-from flask import jsonify, make_response
 
 class StudentApplication(Resource):
 
@@ -680,9 +679,8 @@ class StudentApplication(Resource):
             200
         )
     
-from flask import send_file
 
-class DownloadOffer(Resource):
+class DownloadStudentOffer(Resource):
 
     @auth_token_required
     @roles_required("student")
@@ -824,5 +822,4 @@ class RejectOffer(Resource):
             }),
             200
         )
-    
     

@@ -14,19 +14,20 @@
 
           <!-- PDF Viewer -->
           <iframe
-            :src="pdfUrl"
-            class="w-100 mb-3"
-            height="400"
-          ></iframe>
+              v-if="pdfUrl"
+              :src="pdfUrl"
+              class="w-100 mb-3"
+              height="400">
+          </iframe>
 
           <!-- Download Button -->
           <div class="d-flex justify-content-end mb-3">
-            <a 
-              :href="pdfUrl" 
-              class="btn btn-primary"
-              download
-            >
-              Download PDF
+            <a
+                v-if="pdfUrl"
+                :href="pdfUrl"
+                class="btn btn-primary"
+                download>
+                Download PDF
             </a>
           </div>
 

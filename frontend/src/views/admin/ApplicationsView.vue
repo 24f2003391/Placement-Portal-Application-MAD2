@@ -3,6 +3,9 @@ import { ref, onMounted } from 'vue'
 import { useMessageStore } from '@/stores/message'
 import { useAuthStore } from '@/stores/auth'
 import DocumentViewer from '@/components/DocumentViewer.vue'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 const authStore = useAuthStore()
 
@@ -20,7 +23,7 @@ const loading = ref(false)
 
 const search = ref({
   drive_id: '',
-  student_id: '',
+  student_roll_no: '',
   status: '',
   start_date: '',
   end_date: ''
@@ -43,17 +46,17 @@ async function viewResume(application) {
 
   try {
     const res = await fetch(
-      `http://127.0.0.1:5000/api/admin/applications/${applicationId}/resume`,
+      `http://127.0.0.1:5000/api/admin/applications/${application.id}/resume`,
       {
         headers: {
-          Authorization: `Bearer ${authStore.getAuthToken()}`
+          Authorization: authStore.token,
         }
       }
     )
 
     if (!res.ok) {
       const data = await res.json()
-      messageStore.updateMessages(data.message || 'Failed to load resume')
+      messageStore.updateMessages(data.message || 'Failed to load resume','danger')
       closeModal()
       return
     }
@@ -62,7 +65,7 @@ async function viewResume(application) {
     pdfUrl.value = URL.createObjectURL(blob)
 
   } catch (err) {
-    messageStore.updateMessages('Error loading resume')
+    messageStore.updateMessages('Error loading resume','danger')
     closeModal()
     console.error(err)
   } finally {
@@ -71,6 +74,7 @@ async function viewResume(application) {
 }
 
 function closeModal() {
+  URL.revokeObjectURL(pdfUrl.value)
   showModal.value = false
   pdfUrl.value = ''
 }
@@ -85,25 +89,42 @@ async function fetchApplications() {
       if (value) params.append(key, value)
     })
 
-    const res = await fetch(`http://127.0.0.1:5000/api/admin/applications?${params}`)
+    const res = await fetch(`http://127.0.0.1:5000/api/admin/applications?${params}`,
+      {
+        headers: {
+          Authorization: authStore.token,
+        }
+      }
+    )
     const data = await res.json()
 
     if (!res.ok) {
-      messageStore.updateMessages(data.message || 'Failed to fetch applications')
+      messageStore.updateMessages(data.message || 'Failed to fetch applications','danger')
       return
     }
 
     applications.value = data
 
   } catch (err) {
-    messageStore.updateMessages('Error fetching applications')
+    messageStore.updateMessages('Error fetching applications','danger')
     console.error(err)
   } finally {
     loading.value = false
   }
 }
 
-onMounted(fetchApplications)
+onMounted(() => {
+
+    if (route.query.student_id) {
+        search.value.student_roll_no = route.query.student_id
+    }
+
+    if (route.query.drive_id) {
+        search.value.drive_id = route.query.drive_id
+    }
+
+    fetchApplications()
+})
 </script>
 
 <template>
@@ -207,7 +228,7 @@ onMounted(fetchApplications)
       :title="title"
       :pdfUrl="pdfUrl"
       :details="details"
-      @close="showModal = false">
+      @close="closeModal">
     </DocumentViewer>
   </div>
 </template>
