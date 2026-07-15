@@ -1,16 +1,13 @@
-from flask import Flask
+from flask import Flask,current_app
 from flask_security import Security,utils
 from flask_restful import Api
 
-from controller.models import db
+from controller.models import db,Program
 from controller.datastore import user_datastore
 from controller.config import Config
-from flask_mail import Mail
-from flask_caching import Cache
+from controller.extensions import cache, mail
 from sqlalchemy import event
 
-cache = Cache()
-mail=Mail()
 
 from flask_cors import CORS
 
@@ -31,7 +28,11 @@ CORS(app, origins="http://localhost:5173")
 
 @event.listens_for(db.session, "after_commit")
 def clear_cache_after_commit(session):
-    cache.clear()
+    if current_app:
+        try:
+            cache.clear()
+        except KeyError:
+            pass
 
 with app.app_context():
     db.create_all()
@@ -42,6 +43,44 @@ with app.app_context():
 
     if not user_datastore.find_user(email="admin@gmail.com"):
         user_datastore.create_user(email="admin@gmail.com",password=utils.hash_password("admin123"),roles=[admin_role])
+
+    programs = [
+        Program(
+            code="DSA",
+            name="BSc in Data Science and Applications",
+            duration=4,
+            description="Undergraduate engineering program."
+        ),
+        Program(
+            code="MAI",
+            name="MSc in Artificial Intelligence",
+            duration=2,
+            description="Postgraduate science program."
+        ),
+        Program(
+            code="ES",
+            name="BSc in Electronic Systems",
+            duration=4,
+            description="Undergraduate engineering program."
+        ),
+        Program(
+            code="DSM",
+            name="BSc in Data Science and Management",
+            duration=4,
+            description="Undergraduate engineering program."
+        ),
+        Program(
+            code="ASE",
+            name="BSc in Aerospace Engg",
+            duration=4,
+            description="Undergraduate engineering program."
+        )
+    ]
+
+    for program in programs:
+        if not Program.query.filter_by(code=program.code).first():
+            db.session.add(program)
+
     db.session.commit()
 
 from controller.auth_helpers_api import Login,Logout,StudentRegister,CompanyRegister,CheckEmailAvail,CheckPhoneAvail,CheckRollAvail,GetPrograms\

@@ -55,7 +55,7 @@ celery.conf.beat_schedule = {
 }
 @celery.task(name="celery_app.monthly_report")
 def monthly_report():
-
+    from app import create_app
     app, _ = create_app()
 
     with app.app_context():
@@ -151,17 +151,24 @@ def monthly_report():
         ).count()
 
         top_companies = (
-            db.session.query(
-                Company.name,
-                func.count(Application.id).label("applications")
-            )
-            .join(Placement_Drive)
-            .join(Application)
-            .group_by(Company.id)
-            .order_by(func.count(Application.id).desc())
-            .limit(5)
-            .all()
-        )
+    db.session.query(
+        Company.name,
+        func.count(Application.id).label("applications")
+    )
+    .select_from(Company)
+    .join(
+        Placement_Drive,
+        Company.id == Placement_Drive.company_id
+    )
+    .join(
+        Application,
+        Placement_Drive.id == Application.drive_id
+    )
+    .group_by(Company.id, Company.name)
+    .order_by(func.count(Application.id).desc())
+    .limit(5)
+    .all()
+)
 
         admin = User.query.filter_by(
             email="admin@gmail.com"
@@ -218,7 +225,7 @@ def monthly_report():
 
 @celery.task(name="celery_app.daily_student_reminder")
 def daily_student_reminder():
-
+    from app import create_app
     app, _ = create_app()
 
     with app.app_context():
@@ -294,7 +301,7 @@ def daily_student_reminder():
 
 @celery.task(name="celery_app.export_student_history")
 def export_student_history(student_roll):
-
+    from app import create_app
     app, _ = create_app()
 
     with app.app_context():
@@ -356,7 +363,7 @@ def export_student_history(student_roll):
 
 @celery.task(name="celery_app.export_company_history")
 def export_company_history(company_id):
-
+    from app import create_app
     app, _ = create_app()
 
     with app.app_context():

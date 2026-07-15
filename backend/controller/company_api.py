@@ -7,14 +7,12 @@ from werkzeug.utils import secure_filename
 from datetime import datetime,date
 import os
 
-from celery_app import export_company_history
-
 class ExportCompany(Resource):
 
     @auth_token_required
     @roles_required("company")
     def post(self):
-
+        from celery_app import export_company_history
         company = current_user.company
 
         task = export_company_history.delay(

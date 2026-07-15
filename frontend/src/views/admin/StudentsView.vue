@@ -349,6 +349,7 @@ onMounted(fetchStudents)
         <div v-else-if="placement">
 
           <table class="table table-bordered">
+           <tbody>
 
             <tr>
               <th>Company</th>
@@ -379,6 +380,7 @@ onMounted(fetchStudents)
               <th>Status</th>
               <td>{{ placement.offer.status }}</td>
             </tr>
+            </tbody>
 
           </table>
 

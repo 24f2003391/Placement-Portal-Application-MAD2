@@ -4,7 +4,7 @@ from flask_security import auth_token_required,roles_required
 from controller.models import Company,Student,db,Placement_Drive,Application,Offer
 from sqlalchemy import func
 import os
-from app import cache
+from controller.extensions import cache
 
 from datetime import datetime,timedelta
 

@@ -60,7 +60,7 @@ const checkPhone = async () => {
     const response = await fetch('http://127.0.0.1:5000/api/check-phone', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: hr_phone.value })
+      body: JSON.stringify({ phone_no: hr_phone.value })
     })
 
     const data = await response.json()

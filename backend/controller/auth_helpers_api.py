@@ -7,7 +7,6 @@ from controller.models import Company,Student,Program,db
 from email_validator import validate_email, EmailNotValidError
 import phonenumbers
 from celery.result import AsyncResult
-from celery_app import celery
 import os
 
 
@@ -16,7 +15,7 @@ class ExportStatus(Resource):
     @auth_token_required
     @roles_required("student","company")
     def get(self, task_id):
-
+        from celery_app import celery
         result = AsyncResult(
             task_id,
             app=celery
@@ -43,7 +42,7 @@ class DownloadExport(Resource):
     @auth_token_required
     @roles_required("student","company")
     def get(self, filename):
-
+        from celery_app import celery
         filepath = os.path.join(
             current_app.config["EXPORT_FOLDER"],
             filename
@@ -303,7 +302,7 @@ class CompanyRegister(Resource):
             return make_response(jsonify({'message': f'Email "{email}" is already registered'}), 400)
         
         try:
-            phone_parsed = phonenumbers.parse(hr_phone, None)
+            phone_parsed = phonenumbers.parse(hr_phone,"IN")
             if not phonenumbers.is_valid_number(phone_parsed):
                 raise ValueError()
         except Exception:

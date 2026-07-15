@@ -2,20 +2,19 @@ from flask_restful import Resource
 from flask import jsonify, make_response, request, send_file, current_app,send_from_directory
 from flask_security import auth_token_required, current_user,hash_password,roles_required
 
-from models import db,Student,Application,Interview,Offer,User,Company,Placement_Drive,Resume
+from controller.models import db,Student,Application,Interview,Offer,User,Company,Placement_Drive,Resume
 
 from datetime import datetime
 import os
 from uuid import uuid4
-
-from celery_app import export_student_history
+from controller.extensions import cache
 
 class ExportStudent(Resource):
 
     @auth_token_required
     @roles_required("student")
     def post(self):
-
+        from celery_app import export_student_history
         student = current_user.student
 
         task = export_student_history.delay(

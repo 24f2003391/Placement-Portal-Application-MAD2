@@ -111,7 +111,7 @@ const router = createRouter({
     },
     {
       path: '/student/applications/:id',
-      component: () => import('@/views/student/ApplicationsDetailsView.vue'),
+      component: () => import('@/views/student/ApplicationDetailsView.vue'),
       meta: { requiresAuth: true, role: 'student' }
     },
     {

@@ -4,13 +4,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+INSTANCE_DB = os.path.join(BASE_DIR, "instance", "database.db")
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'instance', 'uploads')
 EXPORT_FOLDER = os.path.join(BASE_DIR, "instance", "exports")
 
 class Config:
 
     SECRET_KEY=os.getenv("SECRET_KEY")
-    SQLALCHEMY_DATABASE_URI=os.getenv("DATABASE_URL")
+    SQLALCHEMY_DATABASE_URI=f"sqlite:///{INSTANCE_DB}"
     SECURITY_PASSWORD_HASH =os.getenv("SECURITY_PASSWORD_HASH")
     SECURITY_PASSWORD_SALT=os.getenv("SECURITY_PASSWORD_SALT")
     SQLALCHEMY_TRACK_MODIFICATIONS=False
