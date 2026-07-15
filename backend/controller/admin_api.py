@@ -4,12 +4,14 @@ from flask_security import auth_token_required,roles_required
 from controller.models import Company,Student,db,Placement_Drive,Application,Offer
 from sqlalchemy import func
 import os
+from app import cache
 
 from datetime import datetime,timedelta
 
 class GetCompanies(Resource):
     @auth_token_required
     @roles_required('admin')
+    @cache.cached(timeout=300, query_string=True)
     def get(self):
         query = Company.query
         id = request.args.get('id')
@@ -159,6 +161,7 @@ class UnblacklistStudent(Resource):
 class GetStudents(Resource):
     @auth_token_required
     @roles_required('admin')
+    @cache.cached(timeout=300, query_string=True)
     def get(self):
         query = Student.query
 
@@ -230,6 +233,7 @@ class BlacklistStudent(Resource):
 class GetDrives(Resource):
     @auth_token_required
     @roles_required('admin')
+    @cache.cached(timeout=300, query_string=True)
     def get(self):
         query = Placement_Drive.query
         company_id = request.args.get('company_id')

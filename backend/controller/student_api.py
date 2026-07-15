@@ -279,6 +279,7 @@ class StudentPlacementDrives(Resource):
 
     @auth_token_required
     @roles_required("student")
+    @cache.cached(timeout=300, query_string=True)
     def get(self):
 
         student = Student.query.filter_by(

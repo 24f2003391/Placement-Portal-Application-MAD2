@@ -6,6 +6,10 @@ from controller.models import db
 from controller.datastore import user_datastore
 from controller.config import Config
 from flask_mail import Mail
+from flask_caching import Cache
+from sqlalchemy import event
+
+cache = Cache()
 mail=Mail()
 
 from flask_cors import CORS
@@ -16,6 +20,7 @@ def create_app():
 
     db.init_app(app)
     mail.init_app(app)
+    cache.init_app(app)
     security=Security(app,user_datastore)
 
     api=Api(app,prefix='/api')
@@ -23,6 +28,10 @@ def create_app():
 
 app,api=create_app()
 CORS(app, origins="http://localhost:5173")
+
+@event.listens_for(db.session, "after_commit")
+def clear_cache_after_commit(session):
+    cache.clear()
 
 with app.app_context():
     db.create_all()
