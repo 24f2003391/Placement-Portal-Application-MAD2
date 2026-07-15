@@ -12,7 +12,12 @@ const messageStore = useMessageStore()
 const loading = ref(false)
 
 const company = ref({})
-const statistics = ref({})
+const statistics = ref({
+    total_drives: 0,
+    approved_drives: 0,
+    total_applications: 0,
+    selected: 0
+})
 const recentDrives = ref([])
 
 async function fetchDashboard() {
@@ -24,7 +29,6 @@ async function fetchDashboard() {
       {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: authStore.token
         }
       }
@@ -140,7 +144,7 @@ onMounted(fetchDashboard)
 
           <div class="card-body">
 
-            <h2>{{ statistics.active_drives }}</h2>
+            <h2>{{ statistics.approved_drives }}</h2>
 
             <p class="mb-0">
               Active Drives

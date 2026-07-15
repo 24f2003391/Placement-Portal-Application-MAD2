@@ -7,7 +7,7 @@ from models import (
     Student,
     Application,
     Interview,
-    Offer,User,Company,Eligibility,Placement_Drive
+    Offer,User,Company,Placement_Drive
 )
 from datetime import datetime
 
@@ -123,7 +123,6 @@ class StudentDashboard(Resource):
     
 
     from flask import request, jsonify, make_response
-
 
 class StudentProfile(Resource):
 
@@ -260,7 +259,6 @@ class StudentProfile(Resource):
             200
         )
 
-
 class StudentPlacementDrives(Resource):
 
     @auth_token_required
@@ -373,7 +371,6 @@ class StudentPlacementDrives(Resource):
             200
         )
 
-
 class StudentPlacementDrive(Resource):
 
     @auth_token_required
@@ -462,7 +459,6 @@ class StudentPlacementDrive(Resource):
             200
         )
     
-
 class ApplyPlacementDrive(Resource):
 
     @auth_token_required
@@ -598,7 +594,6 @@ class ApplyPlacementDrive(Resource):
             201
         )
 
-
 class StudentApplication(Resource):
 
     @auth_token_required
@@ -679,7 +674,6 @@ class StudentApplication(Resource):
             200
         )
     
-
 class DownloadStudentOffer(Resource):
 
     @auth_token_required

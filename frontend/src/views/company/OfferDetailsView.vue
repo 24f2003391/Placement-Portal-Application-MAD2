@@ -172,4 +172,4 @@ onMounted(fetchOffer)
 </div>
 
 </template>
-```
+

@@ -35,7 +35,7 @@ const applications = ref({
   Applied: [],
   Shortlisted: [],
   Selected: [],
-  Rejected: []
+  Rejected: [],
 })
 
 const activeTab = ref('Applied')
@@ -68,7 +68,7 @@ async function fetchDrive() {
     const data = await res.json()
 
     if (!res.ok) {
-      messageStore.updateMessages(data.message, 'danger')
+      messageStore.updateMessages(data.message|| "Unable to fetch drive.", 'danger')
       return
     }
 
@@ -98,7 +98,7 @@ async function fetchApplications() {
     const data = await res.json()
 
     if (!res.ok) {
-      messageStore.updateMessages(data.message, 'danger')
+      messageStore.updateMessages(data.message || "Unable to fetch drive.", 'danger')
       return
     }
 
@@ -227,7 +227,6 @@ function closeInterviewModal() {
 }
 
 async function viewResume(application) {
-  showResume.value = true
 
   resumeTitle.value = `${application.student_name} Resume`
 
@@ -256,7 +255,11 @@ async function viewResume(application) {
     }
 
     const blob = await res.blob()
+    if (resumeUrl.value) {
+        URL.revokeObjectURL(resumeUrl.value)
+    }
     resumeUrl.value = URL.createObjectURL(blob)
+    showResume.value = true
   } catch (err) {
     console.error(err)
     messageStore.updateMessages(

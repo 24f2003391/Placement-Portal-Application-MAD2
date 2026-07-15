@@ -370,7 +370,7 @@ class GetResume(Resource):
         return send_from_directory(
             os.path.join(current_app.config["UPLOAD_FOLDER"], "resumes"),
             filename,
-            as_attachment=True
+            as_attachment=False
         )
     
 class GetStudentPlacement(Resource):
@@ -482,10 +482,15 @@ class AdminDashboard(Resource):
             Company.user.has(active=False)
         ).count()
 
-        active_drives = Placement_Drive.query.filter_by(
+        approved_drives = Placement_Drive.query.filter_by(
             status="Approved"
         ).count()
-
+        closed_drives = Placement_Drive.query.filter_by(
+            status="Closed"
+        ).count()
+        rejected_drives = Placement_Drive.query.filter_by(
+            status="Rejected"
+        ).count()
         pending_drives = Placement_Drive.query.filter_by(
             status="Pending"
         ).count()
@@ -542,7 +547,9 @@ class AdminDashboard(Resource):
             },
 
             "drives": {
-                "active": active_drives,
+                "approved": approved_drives,
+                "rejected": rejected_drives,
+                "closed": closed_drives,
                 "pending": pending_drives
             },
 

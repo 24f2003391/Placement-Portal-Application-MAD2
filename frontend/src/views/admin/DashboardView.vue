@@ -22,7 +22,9 @@ const dashboard = ref({
     blacklisted: 0
   },
   drives: {
-    active: 0,
+    approved: 0,
+    rejected:0,
+    closed:0,
     pending: 0
   },
   applications: {
@@ -174,23 +176,43 @@ onMounted(fetchDashboard)
 
           <div class="row g-3">
 
-            <div class="col-6">
-              <div class="card text-center border-success">
-                <div class="card-body">
-                  <h6>Active Drives</h6>
-                  <h2>{{ dashboard.drives.active }}</h2>
-                </div>
-              </div>
-            </div>
+            <div class="row g-3">
+  <div class="col-md-3 col-6">
+    <div class="card text-center border-success">
+      <div class="card-body">
+        <h6>Approved Drives</h6>
+        <h2>{{ dashboard.drives.approved }}</h2>
+      </div>
+    </div>
+  </div>
 
-            <div class="col-6">
-              <div class="card text-center border-warning">
-                <div class="card-body">
-                  <h6>Pending Drives</h6>
-                  <h2>{{ dashboard.drives.pending }}</h2>
-                </div>
-              </div>
-            </div>
+  <div class="col-md-3 col-6">
+    <div class="card text-center border-danger">
+      <div class="card-body">
+        <h6>Rejected Drives</h6>
+        <h2>{{ dashboard.drives.rejected }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-6">
+    <div class="card text-center border-secondary">
+      <div class="card-body">
+        <h6>Closed Drives</h6>
+        <h2>{{ dashboard.drives.closed }}</h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-3 col-6">
+    <div class="card text-center border-warning">
+      <div class="card-body">
+        <h6>Pending Drives</h6>
+        <h2>{{ dashboard.drives.pending }}</h2>
+      </div>
+    </div>
+  </div>
+</div>
 
           </div>
 

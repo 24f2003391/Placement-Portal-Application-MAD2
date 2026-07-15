@@ -62,6 +62,9 @@ async function viewResume(application) {
     }
 
     const blob = await res.blob()
+    if (pdfUrl.value) {
+      URL.revokeObjectURL(pdfUrl.value)
+  }
     pdfUrl.value = URL.createObjectURL(blob)
 
   } catch (err) {
@@ -140,7 +143,7 @@ onMounted(() => {
       </div>
 
       <div class="col">
-        <input v-model="search.student_id" class="form-control" placeholder="Student Roll No">
+        <input v-model="search.student_roll_no" class="form-control" placeholder="Student Roll No">
       </div>
 
       <div class="col">

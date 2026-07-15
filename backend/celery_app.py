@@ -1,13 +1,21 @@
 from celery import Celery
 
-celery=Celery(
-    'tasks',
-    broker='redis://127.0.0.1:6379/0'
+celery = Celery(
+    "placement_portal",
+    broker="redis://localhost:6379/0",
+    backend="redis://localhost:6379/0"
 )
 
-celery.conf.timezone = 'Asia/Kolkata'
-celery.conf.enable_utc = False
+celery.conf.timezone = "Asia/Kolkata"
 
-from app import app
-
-@celery.task()
+celery.conf.beat_schedule = {
+    "monthly-placement-report": {
+        "task": "tasks.monthly_report",
+        "schedule": {
+            "type": "crontab",
+            "minute": 0,
+            "hour": 9,
+            "day_of_month": 1
+        }
+    }
+}

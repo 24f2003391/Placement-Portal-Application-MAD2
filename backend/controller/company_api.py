@@ -1,9 +1,11 @@
 from flask_restful import Resource
-from flask import request,jsonify,make_response,current_app,send_file
+from flask import request,jsonify,make_response,current_app,send_from_directory
 from flask_security import auth_token_required,roles_required ,current_user
-from controller.models import Company,Student,db,Placement_Drive,Application,Program,Eligibility,Interview,Offer
+from controller.models import Company,db,Placement_Drive,Application,Program,Eligibility,Interview,Offer
+from werkzeug.utils import secure_filename
 
-from datetime import datetime
+from datetime import datetime,date
+import os
 
 class CompanyDashboard(Resource):
 
@@ -23,7 +25,7 @@ class CompanyDashboard(Resource):
 
         total_drives = len(drives)
 
-        active_drives = sum(
+        approved_drives = sum(
             1 for d in drives
             if d.status == "Approved"
         )
@@ -81,7 +83,7 @@ class CompanyDashboard(Resource):
 
             "statistics": {
                 "total_drives": total_drives,
-                "active_drives": active_drives,
+                "approved_drives": approved_drives,
                 "pending_drives": pending_drives,
                 "closed_drives": closed_drives,
                 "total_applications": total_applications,
@@ -447,6 +449,13 @@ class CloseDrive(Resource):
                 jsonify({"message": "Placement drive not found"}),
                 404
             )
+        if drive.status != "Approved":
+            return make_response(
+                jsonify({
+                    "message": "Only approved drives can be closed."
+                }),
+                400
+            )
 
         if drive.status == "Closed":
             return make_response(
@@ -458,8 +467,11 @@ class CloseDrive(Resource):
 
         for application in drive.applications:
             if application.status in ("Applied", "Shortlisted"):
-                application.status = "Cancelled"
-                if application.interview:
+                application.status = "Rejected"
+                if (
+            application.interview and
+            application.interview.status == "Scheduled"
+        ):
                     application.interview.status="Cancelled"
 
         try:
@@ -500,7 +512,7 @@ class CompanyInterview(Resource):
             )
 
         interview_datetime = data.get("interview_datetime")
-        interview_details = data.get("interview_details")
+        interview_details = data.get("interview_details", "").strip()
 
         if not interview_datetime or not interview_details:
             return make_response(
@@ -542,6 +554,13 @@ class CompanyInterview(Resource):
         except ValueError:
             return make_response(
                 jsonify({"message": "Invalid date/time"}),
+                400
+            )
+        if interview_datetime <= datetime.now():
+            return make_response(
+                jsonify({
+                    "message": "Interview must be scheduled for a future date and time."
+                }),
                 400
             )
 
@@ -602,11 +621,35 @@ class CancelInterview(Resource):
                 404
             )
 
+        if interview.status == "Cancelled":
+            return make_response(
+                jsonify({
+                    "message": "Interview is already cancelled."
+                }),
+                400
+            )
+
+        if interview.status == "Completed":
+            return make_response(
+                jsonify({
+                    "message": "Completed interviews cannot be cancelled."
+                }),
+                400
+            )
+
         interview.status = "Cancelled"
 
-        db.session.commit()
-
-        # celery.send_cancel_mail.delay(interview.id)
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            return make_response(
+                jsonify({
+                    "message": "Unable to cancel interview.",
+                    "error": str(e)
+                }),
+                500
+            )
 
         return make_response(
             jsonify({
@@ -638,10 +681,38 @@ class CompleteInterview(Resource):
                 jsonify({"message": "Interview not found"}),
                 404
             )
+        if interview.status == "Completed":
+            return make_response(
+                jsonify({
+                    "message": "Interview is already completed."
+                }),
+                400
+            )
+
+        if interview.status == "Cancelled":
+            return make_response(
+                jsonify({
+                    "message": "Cancelled interviews cannot be marked as completed."
+                }),
+                400
+            )
 
         interview.status = "Completed"
 
-        db.session.commit()
+        try:
+            db.session.commit()
+
+        except Exception as e:
+
+            db.session.rollback()
+
+            return make_response(
+                jsonify({
+                    "message": "Unable to mark interview as complete.",
+                    "error": str(e)
+                }),
+                500
+            )
 
         return make_response(
             jsonify({
@@ -675,15 +746,30 @@ class CompanyViewResume(Resource):
 
         resume = application.resume
 
+
         if not resume:
             return make_response(
                 jsonify({"message": "Resume not found"}),
                 404
             )
 
-        return send_file(
-            resume.file_path,
-            mimetype="application/pdf",
+        filename = os.path.basename(resume.file_path)
+
+        filepath = os.path.join(
+            current_app.config["UPLOAD_FOLDER"],
+            "resumes",
+            filename
+        )
+
+        if not os.path.isfile(filepath):
+            return make_response(
+                jsonify({"message": "Resume file not found."}),
+                404
+            )
+
+        return send_from_directory(
+            os.path.join(current_app.config["UPLOAD_FOLDER"], "resumes"),
+            filename,
             as_attachment=False
         )
 
@@ -707,7 +793,7 @@ def serialize_application(application):
 
         "year": application.student.year_in_program,
 
-        "application_date": application.application_date
+        "application_date": application.application_date.isoformat()
 
     }
 
@@ -719,7 +805,7 @@ def serialize_application(application):
 
             "status": application.interview.status,
 
-            "datetime": application.interview.interview_datetime,
+            "datetime": application.interview.interview_datetime.isoformat(),
 
             "details": application.interview.interview_details
 
@@ -777,7 +863,10 @@ class CompanyDriveDetails(Resource):
 
         for application in drive.applications:
 
-            summary[application.status] += 1
+            status = application.status
+
+            if status in summary:
+                summary[status] += 1
 
             if (
                 application.interview and
@@ -821,7 +910,7 @@ class CompanyDriveDetails(Resource):
 
                     "roll_no": application.student.roll_no,
 
-                    "interview_datetime": interview.interview_datetime,
+                    "interview_datetime": interview.interview_datetime.isoformat(),
 
                     "interview_details": interview.interview_details,
 
@@ -838,7 +927,7 @@ class CompanyDriveDetails(Resource):
 
                 "job_description": drive.job_description,
 
-                "application_deadline": drive.application_deadline,
+                "application_deadline": drive.application_deadline.isoformat(),
 
                 "status": drive.status,
 
@@ -882,11 +971,13 @@ class CompanyDriveApplications(Resource):
 
             "Selected": [],
 
-            "Rejected": []
+            "Rejected": [],
 
         }
 
         for application in drive.applications:
+            if application.status not in result:
+                continue
 
             result[application.status].append(
 
@@ -1063,7 +1154,7 @@ class CompanyOffer(Resource):
             )
 
         package = request.form.get("package")
-        job_role = request.form.get("job_role")
+        job_role = request.form.get("job_role", "").strip()
         joining_date = request.form.get("joining_date")
         offer_letter = request.files.get("offer_letter")
 
@@ -1112,6 +1203,14 @@ class CompanyOffer(Resource):
                 }),
                 400
             )
+        if joining_date <= date.today():
+
+            return make_response(
+                jsonify({
+                    "message": "Joining date must be in the future."
+                }),
+                400
+            )
 
         filename = secure_filename(
             offer_letter.filename
@@ -1130,8 +1229,7 @@ class CompanyOffer(Resource):
             )
 
         upload_folder = os.path.join(
-            current_app.root_path,
-            "uploads",
+            current_app.config["UPLOAD_FOLDER"],
             "offers"
         )
 
@@ -1156,11 +1254,11 @@ class CompanyOffer(Resource):
             f"offer_{offer.id}.pdf"
         )
 
-        offer_letter.save(filepath)
-
-        offer.offer_letter_path = filepath
 
         try:
+            offer_letter.save(filepath)
+
+            offer.offer_letter_path = f"offer_{offer.id}.pdf"
 
             db.session.commit()
 

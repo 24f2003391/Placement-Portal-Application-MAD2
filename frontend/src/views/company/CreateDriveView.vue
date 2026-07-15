@@ -2,8 +2,8 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { useAuthStore } from '@/stores/authStore'
-import { useMessageStore } from '@/stores/messageStore'
+import { useAuthStore } from '@/stores/auth'
+import { useMessageStore } from '@/stores/message'
 
 const router = useRouter()
 
@@ -109,7 +109,7 @@ async function submitDrive() {
     }
 
     for (const item of form.value.eligibility) {
-    if (!item.program_code || !item.min_cgpa || !item.eligible_year) {
+    if (!item.program_code || item.min_cgpa === '' || item.min_cgpa == null || item.eligible_year === '' || item.eligible_year == null) {
         messageStore.updateMessages(
         'Please complete all eligibility fields.',
         'danger'
