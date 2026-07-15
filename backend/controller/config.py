@@ -17,3 +17,11 @@ class Config:
     SECURITY_TOKEN_AUTHENTICATION_HEADER='Authorization'
     UPLOAD_FOLDER=UPLOAD_FOLDER
     EXPORT_FOLDER=EXPORT_FOLDER
+
+    MAIL_SERVER = "localhost"
+    MAIL_PORT = 1025
+    MAIL_USE_TLS = False
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = None
+    MAIL_PASSWORD = None
+    MAIL_DEFAULT_SENDER = "placement.portal@iitm.local"

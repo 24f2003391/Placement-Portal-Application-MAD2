@@ -5,6 +5,8 @@ from flask_restful import Api
 from controller.models import db
 from controller.datastore import user_datastore
 from controller.config import Config
+from flask_mail import Mail
+mail=Mail()
 
 from flask_cors import CORS
 
@@ -13,6 +15,7 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+    mail.init_app(app)
     security=Security(app,user_datastore)
 
     api=Api(app,prefix='/api')

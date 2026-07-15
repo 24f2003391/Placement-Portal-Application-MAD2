@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>Monthly Placement Report</title>
+
+<style>
+
+body{
+    font-family:Arial,sans-serif;
+    margin:30px;
+    color:#333;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:25px;
+}
+
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:left;
+}
+
+th{
+    background:#0d6efd;
+    color:white;
+}
+
+h2{
+    color:#0d6efd;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Monthly Placement Portal Summary</h2>
+
+<p>
+<b>Reporting Month:</b> {{ month }}
+</p>
+
+<hr>
+
+<h3>Students</h3>
+
+<table>
+
+<tr>
+<th>Total Students</th>
+<td>{{ total_students }}</td>
+</tr>
+
+<tr>
+<th>Students Placed</th>
+<td>{{ placed_students }}</td>
+</tr>
+
+<tr>
+<th>Placement Percentage</th>
+<td>{{ placement_percentage }}%</td>
+</tr>
+
+</table>
+
+<h3>Companies</h3>
+
+<table>
+
+<tr>
+<th>Total Companies</th>
+<td>{{ total_companies }}</td>
+</tr>
+
+<tr>
+<th>Approved Companies</th>
+<td>{{ approved_companies }}</td>
+</tr>
+
+</table>
+
+<h3>Placement Drives</h3>
+
+<table>
+
+<tr>
+
+<th>Total</th>
+<th>Approved</th>
+<th>Pending</th>
+<th>Closed</th>
+<th>Rejected</th>
+
+</tr>
+
+<tr>
+
+<td>{{ total_drives }}</td>
+<td>{{ approved_drives }}</td>
+<td>{{ pending_drives }}</td>
+<td>{{ closed_drives }}</td>
+<td>{{ rejected_drives }}</td>
+
+</tr>
+
+</table>
+
+<h3>Applications</h3>
+
+<table>
+
+<tr>
+
+<th>Total</th>
+<th>Applied</th>
+<th>Shortlisted</th>
+<th>Selected</th>
+<th>Rejected</th>
+<th>Cancelled</th>
+
+</tr>
+
+<tr>
+
+<td>{{ total_applications }}</td>
+<td>{{ applied }}</td>
+<td>{{ shortlisted }}</td>
+<td>{{ selected }}</td>
+<td>{{ rejected }}</td>
+<td>{{ cancelled }}</td>
+
+</tr>
+
+</table>
+
+<h3>Interviews</h3>
+
+<table>
+
+<tr>
+
+<th>Total</th>
+<th>Scheduled</th>
+<th>Completed</th>
+<th>Cancelled</th>
+<th>This Month</th>
+
+</tr>
+
+<tr>
+
+<td>{{ total_interviews }}</td>
+<td>{{ scheduled }}</td>
+<td>{{ completed }}</td>
+<td>{{ cancelled_interviews }}</td>
+<td>{{ interviews_this_month }}</td>
+
+</tr>
+
+</table>
+
+<h3>Offers</h3>
+
+<table>
+
+<tr>
+
+<th>Total</th>
+<th>Pending</th>
+<th>Accepted</th>
+<th>Rejected</th>
+
+</tr>
+
+<tr>
+
+<td>{{ total_offers }}</td>
+<td>{{ offered }}</td>
+<td>{{ accepted }}</td>
+<td>{{ rejected_offers }}</td>
+
+</tr>
+
+</table>
+
+<h3>Top Recruiting Companies</h3>
+
+<table>
+
+<tr>
+
+<th>Company</th>
+<th>Applications Received</th>
+
+</tr>
+
+{% for company in top_companies %}
+
+<tr>
+
+<td>{{ company.name }}</td>
+<td>{{ company.applications }}</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<hr>
+
+<p>
+
+This is an automatically generated report from the
+<b>Placement Portal System.</b>
+
+</p>
+
+</body>
+
+</html>
