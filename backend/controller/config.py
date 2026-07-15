@@ -5,6 +5,7 @@ load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'instance', 'uploads')
+EXPORT_FOLDER = os.path.join(BASE_DIR, "instance", "exports")
 
 class Config:
 
@@ -15,3 +16,4 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS=False
     SECURITY_TOKEN_AUTHENTICATION_HEADER='Authorization'
     UPLOAD_FOLDER=UPLOAD_FOLDER
+    EXPORT_FOLDER=EXPORT_FOLDER

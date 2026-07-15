@@ -7,6 +7,27 @@ from werkzeug.utils import secure_filename
 from datetime import datetime,date
 import os
 
+from celery_app import export_company_history
+
+class ExportCompany(Resource):
+
+    @auth_token_required
+    @roles_required("company")
+    def post(self):
+
+        company = current_user.company
+
+        task = export_company_history.delay(
+            company.id)
+
+        return make_response(
+            jsonify({
+                "message": "Export started successfully.",
+                "task_id": task.id
+            }),
+            202
+        )
+
 class CompanyDashboard(Resource):
 
     @auth_token_required

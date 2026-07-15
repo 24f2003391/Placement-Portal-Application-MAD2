@@ -32,8 +32,10 @@ with app.app_context():
         user_datastore.create_user(email="admin@gmail.com",password=utils.hash_password("admin123"),roles=[admin_role])
     db.session.commit()
 
-from controller.auth_helpers_api import Login,Logout,StudentRegister,CompanyRegister,CheckEmailAvail,CheckPhoneAvail,CheckRollAvail,GetPrograms
-
+from controller.auth_helpers_api import Login,Logout,StudentRegister,CompanyRegister,CheckEmailAvail,CheckPhoneAvail,CheckRollAvail,GetPrograms\
+,ExportStatus,DownloadExport
+api.add_resource(ExportStatus,'/export/status/<string:task_id>')
+api.add_resource(DownloadExport,'/export/download/<string:filename>')
 api.add_resource(Login,'/login')
 api.add_resource(Logout,'/logout')
 api.add_resource(CompanyRegister,'/company/register')
@@ -84,7 +86,11 @@ api.add_resource(AdminDashboard, "/admin/dashboard")
 
 from controller.company_api import CompanyDashboard,CompanyDrives,CloseDrive,\
 CancelInterview,CompanyInterview,CompanyViewResume,CompleteInterview,CompanyDriveApplications,\
-CompanyDriveDetails,UpdateApplicationStatus,CompanyOffer,CompanyOfferDetails
+CompanyDriveDetails,UpdateApplicationStatus,CompanyOffer,CompanyOfferDetails,ExportCompany
+api.add_resource(
+    ExportCompany,
+    "/company/export"
+)
 
 api.add_resource(CompanyDashboard,"/company/dashboard")
 api.add_resource(
@@ -141,8 +147,9 @@ api.add_resource(
 )
 
 from controller.student_api import StudentDashboard,StudentProfile,StudentPlacementDrives,StudentPlacementDrive\
-,ApplyPlacementDrive,AcceptOffer,RejectOffer,StudentApplication,DownloadStudentOffer
+,ApplyPlacementDrive,AcceptOffer,RejectOffer,StudentApplication,DownloadStudentOffer,ExportStudent
 
+api.add_resource(ExportStudent,"/student/export")
 api.add_resource(StudentDashboard,"/student/dashboard")
 api.add_resource(
     StudentProfile,

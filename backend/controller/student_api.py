@@ -8,6 +8,26 @@ from datetime import datetime
 import os
 from uuid import uuid4
 
+from celery_app import export_student_history
+
+class ExportStudent(Resource):
+
+    @auth_token_required
+    @roles_required("student")
+    def post(self):
+
+        student = current_user.student
+
+        task = export_student_history.delay(
+            student.roll_no)
+
+        return make_response(
+            jsonify({
+                "message": "Export started successfully.",
+                "task_id": task.id
+            }),
+            202
+        )
 
 class StudentDashboard(Resource):
 

@@ -1,12 +1,69 @@
 from flask_restful import Resource
-from flask import request,jsonify,make_response
-from flask_security import utils,auth_token_required
+from flask import request,jsonify,make_response,current_app,send_from_directory
+from flask_security import utils,auth_token_required,roles_required
 from controller.datastore import user_datastore
 from controller.models import Company,Student,Program,db
 
 from email_validator import validate_email, EmailNotValidError
 import phonenumbers
+from celery.result import AsyncResult
+from celery_app import celery
+import os
 
+
+class ExportStatus(Resource):
+
+    @auth_token_required
+    @roles_required("student","company")
+    def get(self, task_id):
+
+        result = AsyncResult(
+            task_id,
+            app=celery
+        )
+
+        if result.successful():
+
+            return make_response(
+                jsonify({
+                    "status": "SUCCESS",
+                    "filename": result.result
+                }),
+                200
+            )
+
+        return make_response(
+            jsonify({
+                "status": result.status
+            }),
+            200
+        )
+class DownloadExport(Resource):
+
+    @auth_token_required
+    @roles_required("student","company")
+    def get(self, filename):
+
+        filepath = os.path.join(
+            current_app.config["EXPORT_FOLDER"],
+            filename
+        )
+
+        if not os.path.isfile(filepath):
+
+            return make_response(
+                jsonify({
+                    "message": "Export not found."
+                }),
+                404
+            )
+
+        return send_from_directory(
+            current_app.config["EXPORT_FOLDER"],
+            filename,
+            as_attachment=True
+        )
+    
 class GetPrograms(Resource):
     def get(self):
         programs = Program.query.all()

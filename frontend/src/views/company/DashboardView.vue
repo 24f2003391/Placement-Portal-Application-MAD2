@@ -10,6 +10,7 @@ const authStore = useAuthStore()
 const messageStore = useMessageStore()
 
 const loading = ref(false)
+const exporting = ref(false)
 
 const company = ref({})
 const statistics = ref({
@@ -19,6 +20,144 @@ const statistics = ref({
     selected: 0
 })
 const recentDrives = ref([])
+
+async function exportHistory() {
+
+  exporting.value = true
+
+  try {
+
+    const res = await fetch(
+      'http://127.0.0.1:5000/api/company/export',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: authStore.token
+        }
+      }
+    )
+
+    const data = await res.json()
+
+    if (!res.ok) {
+
+      exporting.value = false
+
+      messageStore.updateMessages(
+        data.message,
+        'danger'
+      )
+
+      return
+    }
+
+    messageStore.updateMessages(
+      'Export started.',
+      'info'
+    )
+
+    pollExportStatus(data.task_id)
+
+  }
+
+  catch {
+
+    exporting.value = false
+
+    messageStore.updateMessages(
+      'Unable to start export.',
+      'danger'
+    )
+
+  }
+
+}
+function pollExportStatus(taskId) {
+
+  const timer = setInterval(async () => {
+
+    try {
+
+      const res = await fetch(
+        `http://127.0.0.1:5000/api/export/status/${taskId}`,
+        {
+          headers: {
+            Authorization: authStore.token
+          }
+        }
+      )
+
+      const data = await res.json()
+
+      if (data.status === 'SUCCESS') {
+
+        clearInterval(timer)
+
+        exporting.value = false
+
+        messageStore.updateMessages(
+          'Export completed.',
+          'success'
+        )
+
+          const res = await fetch(`http://127.0.0.1:5000/api/export/download/${data.filename}`, {
+            headers: {
+                Authorization: authStore.token
+            }
+            })
+            if (!res.ok) {
+            messageStore.updateMessages(
+                'Unable to download export.',
+                'danger'
+            )
+            return
+            }
+
+            const blob = await res.blob()
+            const url = URL.createObjectURL(blob)
+
+            const a = document.createElement('a')
+            a.href = url
+            a.download = data.filename
+            a.click()
+
+            URL.revokeObjectURL(url)
+
+      }
+
+      else if (
+        data.status === 'FAILURE'
+      ) {
+
+        clearInterval(timer)
+
+        exporting.value = false
+
+        messageStore.updateMessages(
+          'Export failed.',
+          'danger'
+        )
+
+      }
+
+    }
+    catch (err) {
+
+      clearInterval(timer)
+
+      exporting.value = false
+
+      messageStore.updateMessages(
+        'Unable to check export status.',
+        'danger'
+      )
+
+    }
+
+  }, 2000)
+
+}
+
 
 async function fetchDashboard() {
   loading.value = true
@@ -84,6 +223,14 @@ onMounted(fetchDashboard)
       <p class="text-muted mb-0">
         Company Dashboard
       </p>
+      <button
+        class="btn btn-success mt-2"
+        @click="exportHistory"
+        :disabled="exporting">
+
+        {{ exporting ? 'Exporting...' : 'Export CSV' }}
+
+    </button>
     </div>
 
     <!-- <div>
