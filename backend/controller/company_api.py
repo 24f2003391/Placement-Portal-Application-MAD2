@@ -204,7 +204,7 @@ class CompanyDrives(Resource):
     @auth_token_required
     @roles_required("company")
     def post(self):
-
+        
         data = request.get_json()
 
         if not data:
@@ -407,7 +407,7 @@ class CompanyDrives(Resource):
 
                     min_cgpa=min_cgpa,
 
-                    eligibile_year=eligible_year
+                    eligible_year=eligible_year
 
                 )
 
@@ -1222,6 +1222,7 @@ class CompanyOffer(Resource):
                 }),
                 400
             )
+        joining_date = joining_date.date()
         if joining_date <= date.today():
 
             return make_response(

@@ -147,6 +147,9 @@ async function submitDrive() {
     const data = await res.json()
 
     if (!res.ok) {
+      console.log(data)
+  alert(data.message)
+ 
 
       messageStore.updateMessages(
         data.message || 'Unable to create drive',
@@ -406,7 +409,7 @@ onMounted(fetchPrograms)
 
         <button
           class="btn btn-primary"
-          @click="submitDrive"
+          @click.prevent="submitDrive"
           :disabled="submitting">
 
           <span

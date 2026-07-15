@@ -1,6 +1,6 @@
 from flask_restful import Resource
 from flask import request,jsonify,make_response,current_app,send_from_directory
-from flask_security import utils,auth_token_required,roles_required
+from flask_security import utils,auth_token_required,roles_required,roles_accepted
 from controller.datastore import user_datastore
 from controller.models import Company,Student,Program,db
 
@@ -13,7 +13,7 @@ import os
 class ExportStatus(Resource):
 
     @auth_token_required
-    @roles_required("student","company")
+    @roles_accepted("student","company")
     def get(self, task_id):
         from celery_app import celery
         result = AsyncResult(
@@ -40,7 +40,7 @@ class ExportStatus(Resource):
 class DownloadExport(Resource):
 
     @auth_token_required
-    @roles_required("student","company")
+    @roles_accepted("student","company")
     def get(self, filename):
         from celery_app import celery
         filepath = os.path.join(

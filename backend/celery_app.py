@@ -230,7 +230,8 @@ def daily_student_reminder():
 
     with app.app_context():
 
-        tomorrow = datetime.now().date() + timedelta(days=1)
+        today = datetime.now().date()
+        one_month_later = today + timedelta(days=30)
 
         students = Student.query.all()
 
@@ -252,7 +253,7 @@ def daily_student_reminder():
             interviews = [
                 interview
                 for interview in interviews
-                if interview.interview_datetime.date() == tomorrow
+                if interview.interview_datetime.date() <= one_month_later
             ]
 
             eligible_drives = []
@@ -271,7 +272,7 @@ def daily_student_reminder():
 
                 if (
                     drive.status == "Approved"
-                    and drive.application_deadline.date() == tomorrow
+                    and drive.application_deadline.date() <= one_month_later
                 ):
 
                     applied = Application.query.filter_by(
