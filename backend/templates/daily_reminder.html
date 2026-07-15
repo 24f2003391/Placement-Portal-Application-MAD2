@@ -38,6 +38,7 @@ This is your daily placement reminder for upcoming interviews and application de
     <th align="left">Company</th>
     <th align="left">Job Role</th>
     <th align="left">Interview Time</th>
+    <th align="left">Details</th>
 </tr>
 
 {% for interview in interviews %}
@@ -54,6 +55,9 @@ This is your daily placement reminder for upcoming interviews and application de
 
 <td>
 {{ interview.interview_datetime.strftime("%d %b %Y %I:%M %p") }}
+</td>
+<td>
+{{ interview.interview_details }}
 </td>
 
 </tr>
