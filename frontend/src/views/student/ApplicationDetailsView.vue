@@ -66,12 +66,24 @@ async function fetchApplication() {
 
 }
 
-function downloadOffer() {
+async function downloadOffer() {
 
-  window.open(
-    `http://127.0.0.1:5000/api/student/offers/${offer.value.id}/download`,
-    '_blank'
-  )
+  const res = await fetch(`http://127.0.0.1:5000/api/student/offers/${offer.value.id}/download`,{
+        headers:{
+            Authorization: authStore.token
+        }
+    })
+
+    const blob = await res.blob()
+
+    const url = URL.createObjectURL(blob)
+
+    const a=document.createElement('a')
+    a.href=url
+    a.download='Offer.pdf'
+    a.click()
+
+    URL.revokeObjectURL(url)
 
 }
 

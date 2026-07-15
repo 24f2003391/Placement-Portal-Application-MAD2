@@ -1,15 +1,12 @@
 from flask_restful import Resource
-from flask import jsonify, make_response, request, send_file
+from flask import jsonify, make_response, request, send_file, current_app,send_from_directory
 from flask_security import auth_token_required, current_user,hash_password,roles_required
 
-from models import (
-    db,
-    Student,
-    Application,
-    Interview,
-    Offer,User,Company,Placement_Drive
-)
+from models import db,Student,Application,Interview,Offer,User,Company,Placement_Drive,Resume
+
 from datetime import datetime
+import os
+from uuid import uuid4
 
 
 class StudentDashboard(Resource):
@@ -51,7 +48,6 @@ class StudentDashboard(Resource):
         for application in (
             Application.query
             .join(Application.placement_drive)
-            .join(Application.placement_drive, aliased=False)
             .filter(Application.student_id == student.roll_no)
             .order_by(Application.application_date.desc())
             .all()
@@ -419,6 +415,23 @@ class StudentPlacementDrive(Resource):
             can_apply = False
             reason = "already_applied"
 
+        else:
+            eligible = False
+
+            for item in drive.eligibility:
+
+                if (
+                    item.program_code == student.program_code
+                    and student.cgpa >= item.min_cgpa
+                    and student.year_in_program == item.eligible_year
+                ):
+                    eligible = True
+                    break
+
+            if not eligible:
+                can_apply = False
+                reason = "not_eligible"
+        
         eligibility = []
 
         for item in drive.eligibility:
@@ -548,7 +561,7 @@ class ApplyPlacementDrive(Resource):
                 400
             )
 
-        if not resume.filename.lower().endswith(".pdf"):
+        if not resume.filename or not resume.filename.lower().endswith(".pdf"):
             return make_response(
                 jsonify({
                     "message": "Resume must be a PDF."
@@ -559,14 +572,14 @@ class ApplyPlacementDrive(Resource):
         filename = f"{uuid4()}.pdf"
 
         filepath = os.path.join(
-            current_app.config["UPLOAD_FOLDER"],
+            current_app.config["UPLOAD_FOLDER"],"resumes",
             filename
         )
 
         resume.save(filepath)
 
         resume_record = Resume(
-            file_path=filepath,
+            file_path=filename,
             student_id=student.roll_no
         )
 
@@ -702,7 +715,8 @@ class DownloadStudentOffer(Resource):
                 404
             )
 
-        return send_file(
+        return send_from_directory(
+            os.path.join(current_app.config["UPLOAD_FOLDER"], "offers"),
             offer.offer_letter_path,
             as_attachment=True
         )
@@ -759,6 +773,14 @@ class AcceptOffer(Resource):
             ]:
 
                 application.status = "Cancelled"
+            if application.interview and application.interview.status=="Scheduled":
+                application.interview.status="Cancelled"
+
+            if (
+                application.offer and
+                application.offer.status == "Offered"
+            ):
+                application.offer.status = "Rejected"
 
         db.session.commit()
 

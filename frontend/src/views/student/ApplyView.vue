@@ -1,4 +1,3 @@
-```vue
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
@@ -145,6 +144,7 @@ async function apply() {
   } finally {
 
     submitting.value = false
+    resume.value = null
 
   }
 
@@ -165,6 +165,9 @@ function buttonText() {
 
     case 'deadline_passed':
       return 'Applications Closed'
+
+    case 'not_eligible':
+        return 'Not Eligible'
 
     default:
       return 'Cannot Apply'
@@ -351,4 +354,3 @@ onMounted(fetchDrive)
 </div>
 
 </template>
-```
